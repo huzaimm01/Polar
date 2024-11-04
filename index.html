@@ -94,6 +94,18 @@
             "Fattir Ahmed": { bio: "Gamer & Coder", pfp: "Fattir Ahmed.jpg" }
         };
 
+        function setCookie(name, value, days) {
+            const expires = new Date(Date.now() + days * 864e5).toUTCString();
+            document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/';
+        }
+
+        function getCookie(name) {
+            return document.cookie.split('; ').reduce((r, v) => {
+                const parts = v.split('=');
+                return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+            }, '');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const messagesElem = document.getElementById('messages');
             const messageInput = document.getElementById('message-input');
@@ -120,14 +132,26 @@
                 return;
             }
 
+            // Check for saved theme preference in cookies
+            const savedTheme = getCookie('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                toggleThemeButton.textContent = '🔅';
+                logoImage.src = 'polar2.png';
+            } else {
+                toggleThemeButton.textContent = '🌙';
+            }
+
             toggleThemeButton.addEventListener('click', () => {
                 document.body.classList.toggle('dark');
                 if (document.body.classList.contains('dark')) {
                     toggleThemeButton.textContent = '🔅';
                     logoImage.src = 'polar2.png';
+                    setCookie('theme', 'dark', 7); // Save dark theme preference for 7 days
                 } else {
                     toggleThemeButton.textContent = '🌙';
                     logoImage.src = 'polar1.png';
+                    setCookie('theme', 'light', 7); // Save light theme preference for 7 days
                 }
             });
         });
