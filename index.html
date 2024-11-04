@@ -177,7 +177,7 @@
     <script>
         const userData = {
             "Huzaim Malik": {
-                bio: "Verstappen's #1 fan",
+                bio: "Engineer Mans",
                 pfp: "Huzaim Malik.jpg"
             },
             "Mussab Zaheer": {
@@ -295,8 +295,8 @@
 
             filteredMessages.forEach(msg => {
                 const messageElem = document.createElement('div');
-                messageElem.className = `message bubble ${msg.sender === userFullName ? 'sent' : ''}`;
-                messageElem.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text}`;
+                messageElem.className = message bubble ${msg.sender === userFullName ? 'sent' : ''};
+                messageElem.innerHTML = <strong>${msg.sender}:</strong> ${msg.text};
                 messagesElem.appendChild(messageElem);
             });
 
@@ -313,7 +313,7 @@
 
                     const messageElem = document.createElement('div');
                     messageElem.className = 'message bubble sent';
-                    messageElem.innerHTML = `<strong>${userFullName}:</strong> ${messageText}`;
+                    messageElem.innerHTML = <strong>${userFullName}:</strong> ${messageText};
                     messagesElem.appendChild(messageElem);
                     messageInput.value = '';
                     messagesElem.scrollTop = messagesElem.scrollHeight;
