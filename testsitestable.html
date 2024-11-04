@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="polarfavicon.png" type="image/png">
+    <title>Polar</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --light-bg: #f5f3f5;
+            --dark-bg: #13293D;
+            --light-text: #13293D;
+            --dark-text: #f5f3f5;
+            --border-color: #13293D;
+            --light-border: #13293D;
+            --dark-border: #f5f3f5;
+            --typing-indicator-color: gray;
+            --online-status-color: green;
+            --offline-status-color: red;
+            --input-bg: #fff;
+            --input-text-color: #13293D;
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin: 0; /* Prevent margin issues */
+            padding: 0; /* Prevent padding issues */
+        }
+
+        body.dark {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            --input-bg: #1F2937;
+            --input-text-color: #f5f3f5;
+        }
+
+        .chat-container {
+            transition: background-color 0.3s ease;
+        }
+
+        .message-input {
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border: 1px solid var(--light-border);
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            background-color: var(--input-bg);
+            color: var(--input-text-color);
+        }
+
+        #send-message {
+            transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: var(--light-text);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+        }
+
+        body.dark #send-message {
+            background-color: var(--dark-border);
+            color: #13293D;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 20px;
+            max-width: 70%;
+            position: relative;
+        }
+
+        .message.bubble {
+            background: var(--light-bg);
+            color: var(--light-text);
+            border-radius: 20px 20px 20px 0;
+            align-self: flex-start;
+        }
+
+        .message.bubble.sent {
+            background: var(--light-text);
+            color: var(--dark-text);
+            border-radius: 20px 20px 0 20px;
+            align-self: flex-end;
+        }
+
+        .typing-indicator {
+            font-style: italic;
+            color: var(--typing-indicator-color);
+            display: none;
+        }
+
+        .online-status {
+            width: 10px;
+            height: 10px;
+            background-color: var(--online-status-color);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .offline-status {
+            background-color: var(--offline-status-color);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+            justify-content: space-between; /* Space between logo and user info */
+        }
+
+        #polar-logo {
+            margin-right: 0.5rem;
+        }
+
+        /* Media queries for responsive design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem; /* Smaller title on mobile */
+            }
+
+            .message-input {
+                padding: 0.25rem; /* Adjust padding for mobile */
+            }
+
+            #send-message {
+                padding: 0.25rem 0.5rem; /* Adjust button padding for mobile */
+            }
+
+            .chat-container {
+                max-height: 50vh; /* Limit chat container height on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4">
+        <div class="flex items-start mb-4">
+            <div class="header">
+                <img src="polar1.png" alt="Polar Logo" class="w-16 h-16" id="polar-logo">
+                <h1 class="text-center text-3xl font-bold mb-4">Polar</h1>
+            </div>
+            <div class="flex flex-col items-end ml-auto">
+                <div id="user-status" class="online-status"></div>
+                <img id="user-pfp" src="" alt="Profile Picture" class="w-16 h-16 rounded-full mb-2 hidden">
+                <div id="user-info" class="text-right hidden">
+                    <span id="user-name" class="font-bold text-lg"></span>
+                    <div id="user-bio" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+
+        <button id="toggle-theme" class="text-2xl mb-2">🌙</button>
+
+        <div id="chat-container" class="chat-container mb-4">
+            <div id="messages" class="bg-white dark:bg-[#13293D] rounded-lg p-4 max-h-80 overflow-y-auto border border-[#13293D] dark:border-[#f5f3f5]">
+            </div>
+            <div id="typing-indicator" class="typing-indicator"></div>
+        </div>
+
+        <div class="flex">
+            <input id="message-input" type="text" placeholder="Type your message here..." class="message-input flex-grow">
+            <button id="send-message">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const userData = {
+            "Huzaim Malik": {
+                bio: "Aspiring Engineer & Developer",
+                pfp: "Huzaim Malik.jpg"
+            },
+            "Mussab Zaheer": {
+                bio: "Tech Enthusiast",
+                pfp: "Mussab Zaheer.jpg"
+            },
+            "Muhammad Izaan": {
+                bio: "Passionate about Coding",
+                pfp: "Muhammad Izaan.jpg"
+            },
+            "Daraab Ahmed": {
+                bio: "Creative Mind",
+                pfp: "Daraab Ahmed.jpg"
+            },
+            "Fattir Ahmed": {
+                bio: "Gamer & Coder",
+                pfp: "Fattir Ahmed.jpg"
+            },
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const messagesElem = document.getElementById('messages');
+            const messageInput = document.getElementById('message-input');
+            const sendMessageButton = document.getElementById('send-message');
+            const toggleThemeButton = document.getElementById('toggle-theme');
+            const userPFP = document.getElementById('user-pfp');
+            const userName = document.getElementById('user-name');
+            const userBio = document.getElementById('user-bio');
+            const userInfo = document.getElementById('user-info');
+            const polarLogo = document.getElementById('polar-logo');
+            const userStatus = document.getElementById('user-status');
+            const typingIndicator = document.getElementById('typing-indicator');
+
+            let userFullName = prompt("Please enter your full name:");
+
+            if (userData[userFullName]) {
+                userBio.innerText = userData[userFullName].bio;
+                userPFP.src = userData[userFullName].pfp;
+                userInfo.classList.remove('hidden');
+                userPFP.classList.remove('hidden');
+                userStatus.classList.add('online-status');
+                userName.innerText = userFullName;
+                typingIndicator.style.display = 'none';
+            } else {
+                alert("User not found!");
+                return;
+            }
+
+            const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+            const now = new Date();
+
+            const filteredMessages = messages.filter(msg => {
+                const msgDate = new Date(msg.timestamp);
+                return now - msgDate <= 24 * 60 * 60 * 1000; // Filter for messages within the last 24 hours
+            });
+
+            filteredMessages.forEach(msg => {
+                appendMessage(msg.text, msg.sender);
+            });
+
+            sendMessageButton.addEventListener('click', () => {
+                const messageText = messageInput.value.trim();
+                if (messageText !== "") {
+                    appendMessage(messageText, userFullName);
+                    messageInput.value = ""; // Clear input
+                    saveMessage(messageText, userFullName);
+                    typingIndicator.style.display = 'none';
+                }
+            });
+
+            function appendMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message bubble ${sender === userFullName ? 'sent' : ''}`;
+                messageDiv.innerText = text;
+                messagesElem.appendChild(messageDiv);
+                messagesElem.scrollTop = messagesElem.scrollHeight; // Auto-scroll
+            }
+
+            function saveMessage(text, sender) {
+                const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+                messages.push({ text, sender, timestamp: new Date() });
+                localStorage.setItem('chatMessages', JSON.stringify(messages));
+            }
+
+            toggleThemeButton.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const currentTheme = document.body.classList.contains('dark') ? '🌙' : '🔅';
+                toggleThemeButton.innerText = currentTheme;
+            });
+
+            messageInput.addEventListener('input', () => {
+                typingIndicator.style.display = messageInput.value ? 'block' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>
