@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polar Chat App</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+        }
+        
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 12px; /* Width of the scrollbar */
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent; /* No background */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #f5f3f5; /* Color of the scrollbar */
+            border-radius: 20px; /* Makes it rounder */
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #e1e1e1; /* Slightly darker on hover */
+        }
+        
+        /* Optional: Make scrollbar visible on all browsers */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #f5f3f5 transparent; /* thumb color and track color */
+        }
+
+        .chat-container {
+            transition: background-color 0.3s ease;
+        }
+        
+        .message-input {
+            transition: background-color 0.3s ease;
+        }
+
+        .polar-logo {
+            transition: color 0.3s ease; /* Transition for logo color */
+        }
+    </style>
+</head>
+<body class="bg-[#f5f3f5] dark:bg-[#13293D] transition-colors duration-300">
+    <div class="container mx-auto p-4">
+        <h1 id="polar-logo" class="text-center text-3xl font-bold text-[#13293D] dark:text-[#f5f3f5] mb-4">Polar</h1>
+        <div class="flex justify-between items-start mb-4">
+            <img src="polar.png" alt="Polar Logo" class="w-16 h-16">
+            <div class="flex flex-col items-end ml-auto">
+                <img id="user-pfp" src="" alt="Profile Picture" class="w-16 h-16 rounded-full mb-2 hidden">
+                <div id="user-info" class="text-right hidden">
+                    <span id="user-name" class="font-bold text-lg text-[#13293D] dark:text-[#f5f3f5]"></span>
+                    <div id="user-bio" class="text-sm text-gray-600 dark:text-gray-300"></div>
+                </div>
+            </div>
+        </div>
+
+        <button id="toggle-theme" class="text-2xl mb-2">🌙</button>
+
+        <div id="chat-container" class="chat-container mb-4">
+            <div id="messages" class="bg-white dark:bg-[#13293D] rounded-lg p-4 max-h-80 overflow-y-auto border border-[#13293D] dark:border-[#f5f3f5]">
+                <!-- Messages will appear here -->
+            </div>
+        </div>
+
+        <div class="flex">
+            <input id="message-input" type="text" placeholder="Type your message here..." class="message-input flex-grow p-2 border border-[#13293D] dark:border-[#f5f3f5] rounded-l bg-[#f5f3f5] dark:bg-[#13293D] text-[#13293D] dark:text-[#f5f3f5]">
+            <button id="send-message" class="bg-[#13293D] text-white p-2 rounded-r">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Simulated user data
+        const userData = {
+            "Huzaim Malik": {
+                bio: "Aspiring Engineer & Developer",
+                pfp: "Huzaim Malik.jpg"
+            },
+            "Mussab Zaheer": {
+                bio: "Tech Enthusiast",
+                pfp: "Mussab Zaheer.jpg"
+            },
+            "Muhammad Izaan": {
+                bio: "Passionate about Coding",
+                pfp: "Muhammad Izaan.jpg"
+            },
+            "Daraab Ahmed": {
+                bio: "Creative Mind",
+                pfp: "Daraab Ahmed.jpg"
+            },
+            "Fattir Ahmed": {
+                bio: "Gamer & Coder",
+                pfp: "Fattir Ahmed.jpg"
+            },
+            // Add more users as needed
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const messagesElem = document.getElementById('messages');
+            const messageInput = document.getElementById('message-input');
+            const sendMessageButton = document.getElementById('send-message');
+            const toggleThemeButton = document.getElementById('toggle-theme');
+            const userPFP = document.getElementById('user-pfp');
+            const userName = document.getElementById('user-name');
+            const userBio = document.getElementById('user-bio');
+            const userInfo = document.getElementById('user-info');
+            const polarLogo = document.getElementById('polar-logo');
+
+            let userFullName = prompt("Please enter your full name:");
+
+            // Fetch user data based on full name
+            if (userFullName in userData) {
+                userPFP.src = userData[userFullName].pfp; // Fetch the profile picture from the data
+                userPFP.classList.remove('hidden');
+                userName.textContent = userFullName;
+                userBio.textContent = userData[userFullName].bio; // Set the bio from the data
+                userInfo.classList.remove('hidden');
+            } else {
+                alert("User not recognized!");
+                return; // Stop if user is not recognized
+            }
+
+            // Handle message sending
+            sendMessageButton.addEventListener('click', () => {
+                const messageText = messageInput.value.trim();
+                if (messageText) {
+                    const message = {
+                        user: userFullName,
+                        text: messageText,
+                        timestamp: new Date().toISOString()
+                    };
+                    saveMessage(message);
+                    renderMessages();
+                    messageInput.value = ''; // Clear input field
+                }
+            });
+
+            const saveMessage = (message) => {
+                const messages = JSON.parse(localStorage.getItem('messages')) || [];
+                messages.push(message);
+                localStorage.setItem('messages', JSON.stringify(messages));
+            };
+
+            const renderMessages = () => {
+                messagesElem.innerHTML = ''; // Clear current messages
+                const messages = JSON.parse(localStorage.getItem('messages')) || [];
+                messages.forEach(msg => {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', 'p-2', 'my-2', 'rounded', 'bg-[#f5f3f5]', 'dark:bg-[#13293D]', 'text-[#13293D]', 'dark:text-[#f5f3f5]');
+                    messageElement.innerHTML = `<strong>${msg.user}</strong>: ${msg.text} <br><small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+                    messagesElem.appendChild(messageElement);
+                });
+            };
+
+            // Handle theme toggle
+            toggleThemeButton.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const isDark = document.body.classList.contains('dark');
+                document.body.style.backgroundColor = isDark ? '#13293D' : '#f5f3f5';
+                messageInput.style.backgroundColor = isDark ? '#13293D' : '#f5f3f5';
+                messageInput.style.color = isDark ? '#f5f3f5' : '#13293D'; // Set text color to accent color in light mode
+                polarLogo.style.color = isDark ? '#f5f3f5' : '#13293D'; // Change logo color based on theme
+
+                // Change user name and bio colors based on theme
+                userName.style.color = isDark ? '#f5f3f5' : '#13293D'; // Change name color
+                userBio.style.color = isDark ? '#cbd5e1' : '#555555'; // Change bio color
+
+                toggleThemeButton.textContent = isDark ? '⭐' : '🌙'; // Change icon based on mode
+            });
+
+            // Load messages on page load
+            renderMessages();
+        });
+    </script>
+</body>
+</html>
