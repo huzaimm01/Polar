@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="polarfavicon.png" type="image/png">
+    <title>Polar</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --light-bg: #f5f3f5;
+            --dark-bg: #13293D;
+            --light-text: #13293D;
+            --dark-text: #f5f3f5;
+            --border-color: #13293D;
+            --light-border: #13293D;
+            --dark-border: #f5f3f5;
+            --typing-indicator-color: gray;
+            --online-status-color: green;
+            --offline-status-color: red;
+            --input-bg: #fff; /* White background for light mode */
+            --input-text-color: #13293D; /* Text color for light mode */
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            --input-bg: #1F2937; /* Dark background for dark mode */
+            --input-text-color: #f5f3f5; /* Text color for dark mode */
+        }
+
+        .chat-container {
+            transition: background-color 0.3s ease;
+        }
+
+        .message-input {
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border: 1px solid var(--light-border); /* Border color based on theme */
+            border-radius: 0.375rem; /* Adjusting border radius for a smoother appearance */
+            padding: 0.5rem; /* Adjusting padding for better aesthetics */
+            background-color: var(--input-bg);
+            color: var(--input-text-color);
+        }
+
+        /* Send button styles */
+        #send-message {
+            transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: var(--light-text); /* Background for light mode */
+            color: white; /* Text color for both modes */
+            padding: 0.5rem 1rem; /* Adjusting padding for better aesthetics */
+            border: none; /* Remove default border */
+            border-radius: 0.375rem; /* Smooth border radius */
+            cursor: pointer; /* Change cursor to pointer */
+        }
+
+        body.dark #send-message {
+            background-color: var(--dark-border); /* Background for dark mode */
+            color: white; /* Keep text color white for better visibility */
+        }
+
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 12px; /* Width of the scrollbar */
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent; /* No background */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--light-bg); /* Color of the scrollbar */
+            border-radius: 20px; /* Makes it rounder */
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #e1e1e1; /* Slightly darker on hover */
+        }
+
+        /* Optional: Make scrollbar visible on all browsers */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--light-bg) transparent; /* thumb color and track color */
+        }
+
+        /* Message bubbles */
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 20px;
+            max-width: 70%;
+            position: relative;
+        }
+
+        .message.bubble {
+            background: var(--light-bg);
+            color: var(--light-text);
+            border-radius: 20px 20px 20px 0;
+            align-self: flex-start;
+        }
+
+        .message.bubble.sent {
+            background: var(--light-text);
+            color: var(--dark-text);
+            border-radius: 20px 20px 0 20px;
+            align-self: flex-end;
+        }
+
+        .typing-indicator {
+            font-style: italic;
+            color: var(--typing-indicator-color);
+            display: none; /* Hidden by default */
+        }
+
+        /* Online status */
+        .online-status {
+            width: 10px;
+            height: 10px;
+            background-color: var(--online-status-color); /* Change to your preferred color */
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .offline-status {
+            background-color: var(--offline-status-color); /* Change to your preferred color */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4">
+        <div class="flex items-start mb-4">
+            <img src="polar1.png" alt="Polar Logo" class="w-16 h-16 mr-4" id="polar-logo">
+            <div class="flex flex-col items-end ml-auto">
+                <div id="user-status" class="online-status"></div>
+                <img id="user-pfp" src="" alt="Profile Picture" class="w-16 h-16 rounded-full mb-2 hidden">
+                <div id="user-info" class="text-right hidden">
+                    <span id="user-name" class="font-bold text-lg"></span> <!-- User name will be displayed here -->
+                    <div id="user-bio" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+
+        <h1 class="text-center text-3xl font-bold mb-4">Polar</h1>
+        <button id="toggle-theme" class="text-2xl mb-2">🌙</button>
+
+        <div id="chat-container" class="chat-container mb-4">
+            <div id="messages" class="bg-white dark:bg-[#13293D] rounded-lg p-4 max-h-80 overflow-y-auto border border-[#13293D] dark:border-[#f5f3f5]">
+                <!-- Messages will appear here -->
+            </div>
+            <div id="typing-indicator" class="typing-indicator"></div>
+        </div>
+
+        <div class="flex">
+            <input id="message-input" type="text" placeholder="Type your message here..." class="message-input flex-grow">
+            <button id="send-message" class="bg-light-text text-white p-2 rounded-r">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Simulated user data
+        const userData = {
+            "Huzaim Malik": {
+                bio: "Aspiring Engineer & Developer",
+                pfp: "Huzaim Malik.jpg"
+            },
+            "Mussab Zaheer": {
+                bio: "Tech Enthusiast",
+                pfp: "Mussab Zaheer.jpg"
+            },
+            "Muhammad Izaan": {
+                bio: "Passionate about Coding",
+                pfp: "Muhammad Izaan.jpg"
+            },
+            "Daraab Ahmed": {
+                bio: "Creative Mind",
+                pfp: "Daraab Ahmed.jpg"
+            },
+            "Fattir Ahmed": {
+                bio: "Gamer & Coder",
+                pfp: "Fattir Ahmed.jpg"
+            },
+            // Add more users as needed
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const messagesElem = document.getElementById('messages');
+            const messageInput = document.getElementById('message-input');
+            const sendMessageButton = document.getElementById('send-message');
+            const toggleThemeButton = document.getElementById('toggle-theme');
+            const userPFP = document.getElementById('user-pfp');
+            const userName = document.getElementById('user-name');
+            const userBio = document.getElementById('user-bio');
+            const userInfo = document.getElementById('user-info');
+            const polarLogo = document.getElementById('polar-logo');
+            const userStatus = document.getElementById('user-status');
+            const typingIndicator = document.getElementById('typing-indicator');
+
+            let userFullName = prompt("Please enter your full name:");
+
+            // Check if user exists
+            if (userData[userFullName]) {
+                userBio.innerText = userData[userFullName].bio;
+                userPFP.src = userData[userFullName].pfp;
+                userInfo.classList.remove('hidden');
+                userPFP.classList.remove('hidden');
+                userStatus.classList.add('online-status'); // Add online status class
+                userName.innerText = userFullName; // Display the user's name
+                typingIndicator.style.display = 'none'; // Initially hide typing indicator
+            } else {
+                alert("User not found!");
+                return;
+            }
+
+            // Load chat history from local storage
+            const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+            const now = new Date();
+
+            // Filter messages to only include the last 30 days
+            const filteredMessages = messages.filter(msg => {
+                const msgDate = new Date(msg.timestamp);
+                return (now - msgDate) / (1000 * 60 * 60 * 24) <= 30;
+            });
+
+            // Render messages
+            filteredMessages.forEach(msg => {
+                const messageElem = document.createElement('div');
+                messageElem.className = `message bubble ${msg.sender === userFullName ? 'sent' : ''}`;
+                messageElem.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text}`;
+                messagesElem.appendChild(messageElem);
+            });
+
+            // Event listener for send message button
+            sendMessageButton.addEventListener('click', () => {
+                const messageText = messageInput.value.trim();
+                if (messageText) {
+                    // Create a new message object
+                    const newMessage = {
+                        sender: userFullName,
+                        text: messageText,
+                        timestamp: new Date().toISOString() // Add timestamp
+                    };
+
+                    // Append the new message to the chat
+                    const messageElem = document.createElement('div');
+                    messageElem.className = `message bubble sent`;
+                    messageElem.innerHTML = `<strong>${newMessage.sender}:</strong> ${newMessage.text}`;
+                    messagesElem.appendChild(messageElem);
+                    
+                    // Clear the input
+                    messageInput.value = '';
+
+                    // Save messages to local storage
+                    messages.push(newMessage);
+                    localStorage.setItem('chatMessages', JSON.stringify(messages));
+
+                    // Scroll to the bottom of the messages
+                    messagesElem.scrollTop = messagesElem.scrollHeight;
+                }
+            });
+
+            // Toggle dark/light theme
+            toggleThemeButton.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                toggleThemeButton.textContent = document.body.classList.contains('dark') ? '🔅' : '🌙';
+                // Change logo based on theme
+                polarLogo.src = document.body.classList.contains('dark') ? 'polar1_dark.png' : 'polar1.png'; // Update with actual dark mode logo
+            });
+
+            // Event listener for message input
+            messageInput.addEventListener('input', () => {
+                // Show typing indicator when the user types
+                typingIndicator.style.display = messageInput.value ? 'block' : 'none';
+                typingIndicator.textContent = messageInput.value ? `${userFullName} is typing...` : '';
+            });
+        });
+    </script>
+</body>
+</html>
