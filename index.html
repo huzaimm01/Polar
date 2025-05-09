@@ -1,281 +1,433 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="polarfavicon.png" type="image/png">
-    <title>Polar</title>
+    <link rel="icon" href="assets/images/favicon.png" type="image/png">
+    <title>Polar - Connect with Friends</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root {
-            --light-bg: #f5f3f5;
-            --dark-bg: #13293D;
-            --light-text: #13293D;
-            --dark-text: #f5f3f5;
-            --border-color: #13293D;
-            --light-border: #13293D;
-            --dark-border: #f5f3f5;
-            --typing-indicator-color: gray;
-            --online-status-color: green;
-            --offline-status-color: red;
-            --input-bg: #fff;
-            --input-text-color: #13293D;
-        }
-
-        body {
-            font-family: 'Josefin Sans', sans-serif;
-            background-color: var(--light-bg);
-            color: var(--light-text);
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        body.dark {
-            background-color: var(--dark-bg);
-            color: var(--dark-text);
-            --input-bg: #1F2937;
-            --input-text-color: #f5f3f5;
-        }
-
-        .chat-container {
-            transition: background-color 0.3s ease;
-        }
-
-        .message-input {
-            transition: background-color 0.3s ease, color 0.3s ease;
-            border: 1px solid var(--light-border);
-            border-radius: 0.375rem;
-            padding: 0.5rem;
-            background-color: var(--input-bg);
-            color: var(--input-text-color);
-        }
-
-        #send-message {
-            transition: background-color 0.3s ease, color 0.3s ease;
-            background-color: var(--light-text);
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center; /* Center text vertically */
-            justify-content: center; /* Center text horizontally */
-            min-width: 100px; /* Ensure a minimum width for the button */
-        }
-
-        body.dark #send-message {
-            background-color: var(--dark-border);
-            color: #13293D;
-        }
-
-        ::-webkit-scrollbar {
-            width: 12px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background-color: var(--light-bg);
-            border-radius: 20px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: #e1e1e1;
-        }
-
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: var(--light-bg) transparent;
-        }
-
-        .message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 20px;
-            max-width: 70%;
-            position: relative;
-        }
-
-        .message.bubble {
-            background: var(--light-bg);
-            color: var(--light-text);
-            border-radius: 20px 20px 20px 0;
-            align-self: flex-start;
-        }
-
-        .message.bubble.sent {
-            background: var(--light-text);
-            color: var(--dark-text);
-            border-radius: 20px 20px 0 20px;
-            align-self: flex-end;
-        }
-
-        .typing-indicator {
-            font-style: italic;
-            color: var(--typing-indicator-color);
-            display: none;
-        }
-
-        .online-status {
-            width: 10px;
-            height: 10px;
-            background-color: var(--online-status-color);
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
-        }
-
-        .offline-status {
-            background-color: var(--offline-status-color);
-        }
-
-        /* Align logo and text */
-        .header {
-            display: flex;
-            align-items: center;
-        }
-
-        #polar-logo {
-            margin-right: 0.5rem; /* Space between logo and text */
-        }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="container mx-auto p-4">
-        <div class="flex items-start mb-4">
-            <div class="header">
-                <img src="polar1.png" alt="Polar Logo" class="w-16 h-16" id="polar-logo">
-                <h1 class="text-center text-3xl font-bold mb-4">Polar</h1>
+<body class="loading">
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="flex-center">
+        <div class="logo-container">
+            <img src="assets/images/polar-logo-animated.svg" alt="Polar Logo" class="animate-logo">
+            <h1 class="splash-title">Polar</h1>
+        </div>
+        <div class="loader"></div>
+    </div>
+
+    <!-- Auth Container -->
+    <div id="auth-container" class="hidden">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="assets/images/polar-logo.svg" alt="Polar Logo" class="auth-logo">
+                <h2>Welcome to Polar</h2>
             </div>
-            <div class="flex flex-col items-end ml-auto">
-                <div id="user-status" class="online-status"></div>
-                <img id="user-pfp" src="" alt="Profile Picture" class="w-16 h-16 rounded-full mb-2 hidden">
-                <div id="user-info" class="text-right hidden">
-                    <span id="user-name" class="font-bold text-lg"></span>
-                    <div id="user-bio" class="text-sm text-gray-600"></div>
+            
+            <div class="auth-tabs">
+                <button id="login-tab" class="auth-tab active">Login</button>
+                <button id="signup-tab" class="auth-tab">Sign Up</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <div class="password-input">
+                        <input type="password" id="login-password" required>
+                        <i class="fas fa-eye-slash toggle-password"></i>
+                    </div>
+                </div>
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="remember-me">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+                <button type="submit" class="auth-button">Log In</button>
+            </form>
+            
+            <!-- Sign Up Form -->
+            <form id="signup-form" class="auth-form hidden">
+                <div class="form-group">
+                    <label for="signup-fullname">Full Name</label>
+                    <input type="text" id="signup-fullname" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <div class="password-input">
+                        <input type="password" id="signup-password" required>
+                        <i class="fas fa-eye-slash toggle-password"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signup-bio">Bio (optional)</label>
+                    <textarea id="signup-bio" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="signup-avatar" class="avatar-upload">
+                        <div class="avatar-placeholder">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Upload Profile Picture</span>
+                        </div>
+                        <img id="avatar-preview" class="hidden">
+                    </label>
+                    <input type="file" id="signup-avatar" accept="image/*" class="hidden">
+                </div>
+                <button type="submit" class="auth-button">Create Account</button>
+            </form>
+            
+            <div class="social-auth">
+                <span class="divider">or connect with</span>
+                <div class="social-buttons">
+                    <button class="social-button google">
+                        <i class="fab fa-google"></i>
+                    </button>
+                    <button class="social-button facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </button>
+                    <button class="social-button twitter">
+                        <i class="fab fa-twitter"></i>
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <button id="toggle-theme" class="text-2xl mb-2">🌙</button>
-
-        <div id="chat-container" class="chat-container mb-4">
-            <div id="messages" class="bg-white dark:bg-[#13293D] rounded-lg p-4 max-h-80 overflow-y-auto border border-[#13293D] dark:border-[#f5f3f5]">
+    <!-- Main App -->
+    <div id="app-container" class="hidden">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="nav-left">
+                <button id="toggle-sidebar" class="icon-button">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo-container">
+                    <img src="assets/images/polar-logo.svg" alt="Polar Logo" class="nav-logo">
+                    <h1>Polar</h1>
+                </div>
             </div>
-            <div id="typing-indicator" class="typing-indicator"></div>
+            
+            <div class="nav-center">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="Search for friends, groups, or topics...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <button class="icon-button notification">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <button class="icon-button">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge">5</span>
+                </button>
+                <button id="theme-toggle" class="icon-button">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="user-menu">
+                    <img id="nav-user-img" src="assets/images/default-avatar.png" alt="Profile picture" class="avatar">
+                    <div class="user-dropdown">
+                        <div class="dropdown-header">
+                            <img id="dropdown-user-img" src="assets/images/default-avatar.png" alt="Profile" class="avatar-sm">
+                            <div class="user-info">
+                                <p id="dropdown-user-name">User Name</p>
+                                <small id="dropdown-user-email">user@example.com</small>
+                            </div>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li><a href="#"><i class="fas fa-user"></i> My Profile</a></li>
+                            <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                            <li><a href="#"><i class="fas fa-moon"></i> Dark Mode</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#" id="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Menu</h3>
+                    <ul class="sidebar-menu">
+                        <li class="active"><a href="#"><i class="fas fa-home"></i> Home</a></li>
+                        <li><a href="#"><i class="fas fa-user-friends"></i> Friends</a></li>
+                        <li><a href="#"><i class="fas fa-users"></i> Groups</a></li>
+                        <li><a href="#"><i class="fas fa-bookmark"></i> Saved</a></li>
+                        <li><a href="#"><i class="fas fa-calendar"></i> Events</a></li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Quick Chats</h3>
+                    <ul class="chat-list">
+                        <li class="online">
+                            <img src="assets/images/users/user1.jpg" alt="User" class="avatar-sm">
+                            <div class="chat-user-info">
+                                <p>Huzaim Malik</p>
+                                <span class="last-msg">Typing...</span>
+                            </div>
+                        </li>
+                        <li class="away">
+                            <img src="assets/images/users/user2.jpg" alt="User" class="avatar-sm">
+                            <div class="chat-user-info">
+                                <p>Mussab Zaheer</p>
+                                <span class="last-msg">See you tomorrow!</span>
+                            </div>
+                        </li>
+                        <li class="offline">
+                            <img src="assets/images/users/user3.jpg" alt="User" class="avatar-sm">
+                            <div class="chat-user-info">
+                                <p>Muhammad Izaan</p>
+                                <span class="last-msg">Thanks for the help</span>
+                            </div>
+                        </li>
+                        <li class="online">
+                            <img src="assets/images/users/user4.jpg" alt="User" class="avatar-sm">
+                            <div class="chat-user-info">
+                                <p>Daraab Ahmed</p>
+                                <span class="last-msg">Let's code together</span>
+                            </div>
+                        </li>
+                        <li class="online">
+                            <img src="assets/images/users/user5.jpg" alt="User" class="avatar-sm">
+                            <div class="chat-user-info">
+                                <p>Fattir Ahmed</p>
+                                <span class="last-msg">New game tonight?</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Main Feed -->
+            <main class="main-feed">
+                <!-- Story Section -->
+                <section class="stories-container">
+                    <div class="story add-story">
+                        <div class="story-avatar">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <p>Add Story</p>
+                    </div>
+                    <div class="story">
+                        <img src="assets/images/stories/story1.jpg" alt="Story" class="story-img">
+                        <div class="story-avatar">
+                            <img src="assets/images/users/user1.jpg" alt="User">
+                        </div>
+                        <p>Huzaim</p>
+                    </div>
+                    <div class="story">
+                        <img src="assets/images/stories/story2.jpg" alt="Story" class="story-img">
+                        <div class="story-avatar">
+                            <img src="assets/images/users/user2.jpg" alt="User">
+                        </div>
+                        <p>Mussab</p>
+                    </div>
+                    <div class="story">
+                        <img src="assets/images/stories/story3.jpg" alt="Story" class="story-img">
+                        <div class="story-avatar">
+                            <img src="assets/images/users/user3.jpg" alt="User">
+                        </div>
+                        <p>Izaan</p>
+                    </div>
+                    <div class="story">
+                        <img src="assets/images/stories/story4.jpg" alt="Story" class="story-img">
+                        <div class="story-avatar">
+                            <img src="assets/images/users/user4.jpg" alt="User">
+                        </div>
+                        <p>Daraab</p>
+                    </div>
+                </section>
+
+                <!-- Create Post -->
+                <section class="create-post">
+                    <div class="post-input">
+                        <img id="post-user-img" src="assets/images/default-avatar.png" alt="User" class="avatar-sm">
+                        <input type="text" placeholder="What's on your mind?" id="new-post-text">
+                    </div>
+                    <div class="post-actions">
+                        <button class="post-action">
+                            <i class="fas fa-image"></i>
+                            <span>Photo/Video</span>
+                        </button>
+                        <button class="post-action">
+                            <i class="fas fa-user-tag"></i>
+                            <span>Tag Friends</span>
+                        </button>
+                        <button class="post-action">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Location</span>
+                        </button>
+                        <button id="create-post-btn" class="post-submit">Share</button>
+                    </div>
+                </section>
+
+                <!-- Posts Feed -->
+                <section class="posts-container" id="posts-container">
+                    <!-- Posts will be loaded dynamically -->
+                </section>
+            </main>
+
+            <!-- Right Sidebar -->
+            <aside class="right-sidebar">
+                <!-- Upcoming Events -->
+                <div class="sidebar-card">
+                    <div class="card-header">
+                        <h3>Upcoming Events</h3>
+                        <a href="#" class="see-all">See All</a>
+                    </div>
+                    <div class="event-list">
+                        <div class="event-item">
+                            <div class="event-date">
+                                <span class="month">May</span>
+                                <span class="day">15</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Code Jam 2025</h4>
+                                <p><i class="fas fa-map-marker-alt"></i> Tech Hub</p>
+                                <p><i class="fas fa-users"></i> 24 Going</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-date">
+                                <span class="month">May</span>
+                                <span class="day">22</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>DevOps Workshop</h4>
+                                <p><i class="fas fa-map-marker-alt"></i> Virtual</p>
+                                <p><i class="fas fa-users"></i> 36 Going</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Friend Suggestions -->
+                <div class="sidebar-card">
+                    <div class="card-header">
+                        <h3>People You May Know</h3>
+                        <a href="#" class="see-all">See All</a>
+                    </div>
+                    <ul class="suggestion-list">
+                        <li class="suggestion-item">
+                            <img src="assets/images/users/suggestion1.jpg" alt="User" class="avatar-sm">
+                            <div class="suggestion-info">
+                                <p>Ahmad Khan</p>
+                                <small>12 mutual friends</small>
+                            </div>
+                            <button class="add-friend">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </li>
+                        <li class="suggestion-item">
+                            <img src="assets/images/users/suggestion2.jpg" alt="User" class="avatar-sm">
+                            <div class="suggestion-info">
+                                <p>Saad Zafar</p>
+                                <small>8 mutual friends</small>
+                            </div>
+                            <button class="add-friend">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </li>
+                        <li class="suggestion-item">
+                            <img src="assets/images/users/suggestion3.jpg" alt="User" class="avatar-sm">
+                            <div class="suggestion-info">
+                                <p>Aisha Malik</p>
+                                <small>3 mutual friends</small>
+                            </div>
+                            <button class="add-friend">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Active Now -->
+                <div class="sidebar-card">
+                    <div class="card-header">
+                        <h3>Active Now</h3>
+                    </div>
+                    <ul class="active-list">
+                        <li class="active-user">
+                            <div class="active-avatar">
+                                <img src="assets/images/users/user1.jpg" alt="User" class="avatar-sm">
+                                <span class="status-indicator online"></span>
+                            </div>
+                            <p>Huzaim Malik</p>
+                        </li>
+                        <li class="active-user">
+                            <div class="active-avatar">
+                                <img src="assets/images/users/user4.jpg" alt="User" class="avatar-sm">
+                                <span class="status-indicator online"></span>
+                            </div>
+                            <p>Daraab Ahmed</p>
+                        </li>
+                        <li class="active-user">
+                            <div class="active-avatar">
+                                <img src="assets/images/users/user5.jpg" alt="User" class="avatar-sm">
+                                <span class="status-indicator online"></span>
+                            </div>
+                            <p>Fattir Ahmed</p>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
         </div>
 
-        <div class="flex">
-            <input id="message-input" type="text" placeholder="Type your message here..." class="message-input flex-grow">
-            <button id="send-message">Send</button>
+        <!-- Chat Window -->
+        <div class="chat-window hidden" id="chat-window">
+            <div class="chat-header">
+                <div class="chat-user">
+                    <img src="assets/images/users/user1.jpg" alt="User" class="avatar-sm">
+                    <div class="chat-user-info">
+                        <h4>Huzaim Malik</h4>
+                        <span class="status">Online</span>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="icon-button"><i class="fas fa-phone"></i></button>
+                    <button class="icon-button"><i class="fas fa-video"></i></button>
+                    <button class="icon-button"><i class="fas fa-expand"></i></button>
+                    <button class="icon-button close-chat"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be loaded dynamically -->
+            </div>
+            <div class="chat-input-container">
+                <button class="icon-button"><i class="fas fa-paperclip"></i></button>
+                <button class="icon-button"><i class="far fa-smile"></i></button>
+                <input type="text" id="chat-input" placeholder="Type a message...">
+                <button class="icon-button send-message"><i class="fas fa-paper-plane"></i></button>
+            </div>
         </div>
     </div>
 
-    <script>
-        const userData = {
-            "Huzaim Malik": {
-                bio: "Aspiring Engineer & Developer",
-                pfp: "Huzaim Malik.jpg"
-            },
-            "Mussab Zaheer": {
-                bio: "Tech Enthusiast",
-                pfp: "Mussab Zaheer.jpg"
-            },
-            "Muhammad Izaan": {
-                bio: "Passionate about Coding",
-                pfp: "Muhammad Izaan.jpg"
-            },
-            "Daraab Ahmed": {
-                bio: "Creative Mind",
-                pfp: "Daraab Ahmed.jpg"
-            },
-            "Fattir Ahmed": {
-                bio: "Gamer & Coder",
-                pfp: "Fattir Ahmed.jpg"
-            },
-        };
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const messagesElem = document.getElementById('messages');
-            const messageInput = document.getElementById('message-input');
-            const sendMessageButton = document.getElementById('send-message');
-            const toggleThemeButton = document.getElementById('toggle-theme');
-            const userPFP = document.getElementById('user-pfp');
-            const userName = document.getElementById('user-name');
-            const userBio = document.getElementById('user-bio');
-            const userInfo = document.getElementById('user-info');
-            const polarLogo = document.getElementById('polar-logo');
-            const userStatus = document.getElementById('user-status');
-            const typingIndicator = document.getElementById('typing-indicator');
-
-            let userFullName = prompt("Please enter your full name:");
-
-            if (userData[userFullName]) {
-                userBio.innerText = userData[userFullName].bio;
-                userPFP.src = userData[userFullName].pfp;
-                userInfo.classList.remove('hidden');
-                userPFP.classList.remove('hidden');
-                userStatus.classList.add('online-status');
-                userName.innerText = userFullName;
-                typingIndicator.style.display = 'none';
-            } else {
-                alert("User not found!");
-                return;
-            }
-
-            const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-            const now = new Date();
-
-            const filteredMessages = messages.filter(msg => {
-                const msgDate = new Date(msg.timestamp);
-                return (now - msgDate) / (1000 * 60 * 60 * 24) <= 30;
-            });
-
-            filteredMessages.forEach(msg => {
-                const messageElem = document.createElement('div');
-                messageElem.className = `message bubble ${msg.sender === userFullName ? 'sent' : ''}`;
-                messageElem.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text}`;
-                messagesElem.appendChild(messageElem);
-            });
-
-            sendMessageButton.addEventListener('click', () => {
-                const messageText = messageInput.value.trim();
-                if (messageText) {
-                    const newMessage = {
-                        sender: userFullName,
-                        text: messageText,
-                        timestamp: new Date().toISOString()
-                    };
-                    messages.push(newMessage);
-                    localStorage.setItem('chatMessages', JSON.stringify(messages));
-
-                    const messageElem = document.createElement('div');
-                    messageElem.className = 'message bubble sent';
-                    messageElem.innerHTML = `<strong>${userFullName}:</strong> ${messageText}`;
-                    messagesElem.appendChild(messageElem);
-                    messageInput.value = '';
-                    messagesElem.scrollTop = messagesElem.scrollHeight;
-                    typingIndicator.style.display = 'none';
-                }
-            });
-
-            toggleThemeButton.addEventListener('click', () => {
-                document.body.classList.toggle('dark');
-                polarLogo.src = document.body.classList.contains('dark') ? 'polar2.png' : 'polar1.png'; // Change logo based on theme
-                toggleThemeButton.textContent = document.body.classList.contains('dark') ? '🔆' : '🌙';
-                localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
-            });
-
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                document.body.classList.toggle('dark', savedTheme === 'dark');
-                polarLogo.src = savedTheme === 'dark' ? 'polar2.png' : 'polar1.png'; // Set logo based on saved theme
-                toggleThemeButton.textContent = savedTheme === 'dark' ? '🔆' : '🌙';
-            }
-        });
-    </script>
+    <!-- Scripts -->
+    <script src="main.js"></script>
 </body>
 </html>
