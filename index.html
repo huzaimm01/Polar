@@ -1,433 +1,1432 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="assets/images/favicon.png" type="image/png">
-    <title>Polar - Connect with Friends</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="polarfavicon.png" type="image/png">
+    <title>Polar - Connect Your Circle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --light-bg: #f5f3f5;
+            --dark-bg: #13293D;
+            --light-text: #13293D;
+            --dark-text: #f5f3f5;
+            --accent-color: #1E88E5;
+            --accent-hover: #1565C0;
+            --border-color: #13293D;
+            --light-border: #13293D;
+            --dark-border: #f5f3f5;
+            --typing-indicator-color: gray;
+            --online-status-color: #4CAF50;
+            --offline-status-color: #F44336;
+            --input-bg: #fff;
+            --input-text-color: #13293D;
+            --card-bg-light: white;
+            --card-bg-dark: #1F2937;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+            --warning-color: #FF9800;
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            transition: background-color 0.5s ease, color 0.5s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            --input-bg: #1F2937;
+            --input-text-color: #f5f3f5;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card {
+            background-color: var(--card-bg-light);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        body.dark .card {
+            background-color: var(--card-bg-dark);
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 2rem;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 180px);
+            transition: all 0.3s ease;
+        }
+
+        .message-input {
+            transition: all 0.3s ease;
+            border: 1px solid var(--light-border);
+            border-radius: 1.5rem;
+            padding: 0.75rem 1.25rem;
+            background-color: var(--input-bg);
+            color: var(--input-text-color);
+            font-size: 1rem;
+        }
+
+        .message-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        body.dark .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        body.dark .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--light-text);
+            border-radius: 10px;
+            opacity: 0.5;
+        }
+
+        body.dark ::-webkit-scrollbar-thumb {
+            background-color: var(--dark-text);
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--light-text) transparent;
+        }
+
+        body.dark * {
+            scrollbar-color: var(--dark-text) transparent;
+        }
+
+        .message {
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 18px;
+            max-width: 80%;
+            position: relative;
+            animation-duration: 0.3s;
+            word-break: break-word;
+            transition: all 0.3s ease;
+        }
+
+        .message.bubble {
+            background: #E3F2FD;
+            color: var(--light-text);
+            border-radius: 18px 18px 18px 4px;
+            align-self: flex-start;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.bubble.sent {
+            background: var(--accent-color);
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+            align-self: flex-end;
+        }
+
+        body.dark .message.bubble:not(.sent) {
+            background: #2C3E50;
+            color: var(--dark-text);
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .typing-indicator {
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 18px;
+            display: inline-block;
+            margin: 8px 0;
+            align-self: flex-start;
+            font-size: 0.9rem;
+            color: var(--light-text);
+            max-width: 100px;
+            display: none;
+        }
+
+        body.dark .typing-indicator {
+            background: #2C3E50;
+            color: var(--dark-text);
+        }
+
+        .typing-animation {
+            display: inline-flex;
+        }
+
+        .typing-dot {
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite;
+            opacity: 0.7;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-4px);
+            }
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+        }
+
+        .status-online {
+            background-color: var(--online-status-color);
+            box-shadow: 0 0 0 2px white;
+        }
+
+        .status-offline {
+            background-color: var(--offline-status-color);
+            box-shadow: 0 0 0 2px white;
+        }
+
+        body.dark .status-online,
+        body.dark .status-offline {
+            box-shadow: 0 0 0 2px var(--card-bg-dark);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .avatar {
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            transition: all 0.3s ease;
+        }
+
+        body.dark .avatar {
+            border-color: var(--dark-bg);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .user-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark .user-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .message-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: var(--success-color);
+        }
+
+        .notification.error {
+            background-color: var(--error-color);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            background-color: var(--input-bg);
+            color: var(--input-text-color);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.2);
+        }
+
+        body.dark .form-input {
+            border-color: #4B5563;
+        }
+
+        .form-error {
+            color: var(--error-color);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .switch-form a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #ddd;
+        }
+
+        body.dark .divider::before, body.dark .divider::after {
+            background-color: #4B5563;
+        }
+
+        .divider-text {
+            padding: 0 1rem;
+            color: #6B7280;
+        }
+
+        .settings-icon {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .settings-icon:hover {
+            transform: rotate(30deg);
+        }
+
+        .emoji-picker {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            display: none;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.5rem;
+            z-index: 10;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        body.dark .emoji-picker {
+            background: var(--card-bg-dark);
+        }
+
+        .emoji {
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            text-align: center;
+        }
+
+        .emoji:hover {
+            transform: scale(1.2);
+        }
+
+        .message-actions {
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 0.25rem;
+            display: none;
+        }
+
+        .message:hover .message-actions {
+            display: block;
+        }
+
+        .action-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+            font-size: 0.75rem;
+            padding: 2px 4px;
+        }
+
+        .action-button:hover {
+            opacity: 1;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.3s ease-in-out;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.3s ease-in-out;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spinner 0.8s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spinner {
+            to { transform: rotate(360deg); }
+        }
+
+        body.dark .loading-spinner {
+            border-color: rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-color);
+        }
+
+        /* Profile card */
+        .profile-card {
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .profile-banner {
+            height: 80px;
+            background-color: var(--accent-color);
+            position: relative;
+        }
+
+        .profile-avatar-container {
+            position: relative;
+            margin-top: -40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border: 4px solid white;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark .profile-avatar {
+            border-color: var(--card-bg-dark);
+        }
+
+        .profile-info {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .profile-name {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .profile-bio {
+            color: #6B7280;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        body.dark .profile-bio {
+            color: #9CA3AF;
+        }
+
+        /* Override animate.css durations */
+        .animate__animated {
+            --animate-duration: 0.5s;
+        }
+
+        /* Custom tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
 </head>
-<body class="loading">
-    <!-- Splash Screen -->
-    <div id="splash-screen" class="flex-center">
-        <div class="logo-container">
-            <img src="assets/images/polar-logo-animated.svg" alt="Polar Logo" class="animate-logo">
-            <h1 class="splash-title">Polar</h1>
-        </div>
-        <div class="loader"></div>
-    </div>
+<body>
+    <div id="app" class="app-container">
+        <!-- Authentication Container -->
+        <div id="auth-container" class="auth-container fade-in">
+            <div class="card p-6">
+                <div class="text-center mb-6">
+                    <div class="logo-container mx-auto">
+                        <img src="polar1.png" alt="Polar Logo" class="w-16 h-16 mx-auto" id="auth-logo">
+                        <h1 class="text-2xl font-bold ml-2">Polar</h1>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">Connect with your circle</p>
+                </div>
 
-    <!-- Auth Container -->
-    <div id="auth-container" class="hidden">
-        <div class="auth-card">
-            <div class="auth-header">
-                <img src="assets/images/polar-logo.svg" alt="Polar Logo" class="auth-logo">
-                <h2>Welcome to Polar</h2>
-            </div>
-            
-            <div class="auth-tabs">
-                <button id="login-tab" class="auth-tab active">Login</button>
-                <button id="signup-tab" class="auth-tab">Sign Up</button>
-            </div>
-            
-            <!-- Login Form -->
-            <form id="login-form" class="auth-form">
-                <div class="form-group">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Password</label>
-                    <div class="password-input">
-                        <input type="password" id="login-password" required>
-                        <i class="fas fa-eye-slash toggle-password"></i>
+                <!-- Login Form -->
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username" class="form-label">Username</label>
+                        <input type="text" id="login-username" class="form-input" placeholder="Enter your username" required>
                     </div>
-                </div>
-                <div class="form-options">
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="remember-me">
-                        <span class="checkmark"></span>
-                        Remember me
-                    </label>
-                    <a href="#" class="forgot-password">Forgot password?</a>
-                </div>
-                <button type="submit" class="auth-button">Log In</button>
-            </form>
-            
-            <!-- Sign Up Form -->
-            <form id="signup-form" class="auth-form hidden">
-                <div class="form-group">
-                    <label for="signup-fullname">Full Name</label>
-                    <input type="text" id="signup-fullname" required>
-                </div>
-                <div class="form-group">
-                    <label for="signup-email">Email</label>
-                    <input type="email" id="signup-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="signup-password">Password</label>
-                    <div class="password-input">
-                        <input type="password" id="signup-password" required>
-                        <i class="fas fa-eye-slash toggle-password"></i>
+                    <div class="form-group">
+                        <label for="login-password" class="form-label">Password</label>
+                        <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="signup-bio">Bio (optional)</label>
-                    <textarea id="signup-bio" rows="2"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="signup-avatar" class="avatar-upload">
-                        <div class="avatar-placeholder">
-                            <i class="fas fa-user-plus"></i>
-                            <span>Upload Profile Picture</span>
-                        </div>
-                        <img id="avatar-preview" class="hidden">
-                    </label>
-                    <input type="file" id="signup-avatar" accept="image/*" class="hidden">
-                </div>
-                <button type="submit" class="auth-button">Create Account</button>
-            </form>
-            
-            <div class="social-auth">
-                <span class="divider">or connect with</span>
-                <div class="social-buttons">
-                    <button class="social-button google">
-                        <i class="fab fa-google"></i>
-                    </button>
-                    <button class="social-button facebook">
-                        <i class="fab fa-facebook-f"></i>
-                    </button>
-                    <button class="social-button twitter">
-                        <i class="fab fa-twitter"></i>
-                    </button>
-                </div>
+                    <button type="submit" class="btn btn-primary w-full mt-4">Login</button>
+                    <div class="switch-form">
+                        <p>Don't have an account? <a href="#" id="switch-to-signup">Sign up</a></p>
+                    </div>
+                </form>
+
+                <!-- Sign Up Form -->
+                <form id="signup-form" class="hide">
+                    <div class="form-group">
+                        <label for="signup-fullname" class="form-label">Full Name</label>
+                        <input type="text" id="signup-fullname" class="form-input" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-username" class="form-label">Username</label>
+                        <input type="text" id="signup-username" class="form-input" placeholder="Create a username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password" class="form-label">Password</label>
+                        <input type="password" id="signup-password" class="form-input" placeholder="Create a password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-bio" class="form-label">Bio</label>
+                        <textarea id="signup-bio" class="form-input" placeholder="Tell us about yourself" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-avatar" class="form-label">Profile Picture URL</label>
+                        <input type="text" id="signup-avatar" class="form-input" placeholder="Enter image URL (optional)">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full mt-4">Sign Up</button>
+                    <div class="switch-form">
+                        <p>Already have an account? <a href="#" id="switch-to-login">Login</a></p>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
 
-    <!-- Main App -->
-    <div id="app-container" class="hidden">
-        <!-- Navbar -->
-        <nav class="navbar">
-            <div class="nav-left">
-                <button id="toggle-sidebar" class="icon-button">
-                    <i class="fas fa-bars"></i>
-                </button>
+        <!-- Main App Container -->
+        <div id="main-container" class="hide">
+            <!-- Header -->
+            <div class="header flex justify-between items-center mb-4">
                 <div class="logo-container">
-                    <img src="assets/images/polar-logo.svg" alt="Polar Logo" class="nav-logo">
-                    <h1>Polar</h1>
+                    <img src="polar1.png" alt="Polar Logo" class="w-12 h-12" id="polar-logo">
+                    <h1 class="text-2xl font-bold ml-2">Polar</h1>
                 </div>
-            </div>
-            
-            <div class="nav-center">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" placeholder="Search for friends, groups, or topics...">
-                </div>
-            </div>
-            
-            <div class="nav-right">
-                <button class="icon-button notification">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge">3</span>
-                </button>
-                <button class="icon-button">
-                    <i class="fas fa-envelope"></i>
-                    <span class="badge">5</span>
-                </button>
-                <button id="theme-toggle" class="icon-button">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <div class="user-menu">
-                    <img id="nav-user-img" src="assets/images/default-avatar.png" alt="Profile picture" class="avatar">
-                    <div class="user-dropdown">
-                        <div class="dropdown-header">
-                            <img id="dropdown-user-img" src="assets/images/default-avatar.png" alt="Profile" class="avatar-sm">
-                            <div class="user-info">
-                                <p id="dropdown-user-name">User Name</p>
-                                <small id="dropdown-user-email">user@example.com</small>
-                            </div>
-                        </div>
-                        <ul class="dropdown-menu">
-                            <li><a href="#"><i class="fas fa-user"></i> My Profile</a></li>
-                            <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
-                            <li><a href="#"><i class="fas fa-moon"></i> Dark Mode</a></li>
-                            <li class="divider"></li>
-                            <li><a href="#" id="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                        </ul>
+                <div class="flex items-center">
+                    <button id="toggle-theme" class="text-2xl mr-4 transition-transform hover:rotate-12">🌙</button>
+                    <div class="tooltip">
+                        <button id="logout-button" class="text-lg">🚪</button>
+                        <span class="tooltip-text">Logout</span>
                     </div>
                 </div>
             </div>
-        </nav>
 
-        <!-- Main Content Area -->
-        <div class="content-area">
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <div class="sidebar-section">
-                    <h3>Menu</h3>
-                    <ul class="sidebar-menu">
-                        <li class="active"><a href="#"><i class="fas fa-home"></i> Home</a></li>
-                        <li><a href="#"><i class="fas fa-user-friends"></i> Friends</a></li>
-                        <li><a href="#"><i class="fas fa-users"></i> Groups</a></li>
-                        <li><a href="#"><i class="fas fa-bookmark"></i> Saved</a></li>
-                        <li><a href="#"><i class="fas fa-calendar"></i> Events</a></li>
-                    </ul>
-                </div>
-                
-                <div class="sidebar-section">
-                    <h3>Quick Chats</h3>
-                    <ul class="chat-list">
-                        <li class="online">
-                            <img src="assets/images/users/user1.jpg" alt="User" class="avatar-sm">
-                            <div class="chat-user-info">
-                                <p>Huzaim Malik</p>
-                                <span class="last-msg">Typing...</span>
-                            </div>
-                        </li>
-                        <li class="away">
-                            <img src="assets/images/users/user2.jpg" alt="User" class="avatar-sm">
-                            <div class="chat-user-info">
-                                <p>Mussab Zaheer</p>
-                                <span class="last-msg">See you tomorrow!</span>
-                            </div>
-                        </li>
-                        <li class="offline">
-                            <img src="assets/images/users/user3.jpg" alt="User" class="avatar-sm">
-                            <div class="chat-user-info">
-                                <p>Muhammad Izaan</p>
-                                <span class="last-msg">Thanks for the help</span>
-                            </div>
-                        </li>
-                        <li class="online">
-                            <img src="assets/images/users/user4.jpg" alt="User" class="avatar-sm">
-                            <div class="chat-user-info">
-                                <p>Daraab Ahmed</p>
-                                <span class="last-msg">Let's code together</span>
-                            </div>
-                        </li>
-                        <li class="online">
-                            <img src="assets/images/users/user5.jpg" alt="User" class="avatar-sm">
-                            <div class="chat-user-info">
-                                <p>Fattir Ahmed</p>
-                                <span class="last-msg">New game tonight?</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </aside>
+            <div class="flex flex-col md:flex-row gap-4">
+                <!-- User Profile Card -->
+                <div class="md:w-1/4">
+                    <div class="card profile-card mb-4">
+                        <div class="profile-banner"></div>
+                        <div class="profile-avatar-container">
+                            <img id="user-pfp" src="/api/placeholder/80/80" alt="Profile" class="profile-avatar">
+                            <div id="user-status" class="status-indicator status-online absolute bottom-0 right-6"></div>
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="user-name" class="profile-name">Loading...</h2>
+                            <p id="user-bio" class="profile-bio">Loading...</p>
+                        </div>
+                    </div>
 
-            <!-- Main Feed -->
-            <main class="main-feed">
-                <!-- Story Section -->
-                <section class="stories-container">
-                    <div class="story add-story">
-                        <div class="story-avatar">
-                            <i class="fas fa-plus"></i>
-                        </div>
-                        <p>Add Story</p>
-                    </div>
-                    <div class="story">
-                        <img src="assets/images/stories/story1.jpg" alt="Story" class="story-img">
-                        <div class="story-avatar">
-                            <img src="assets/images/users/user1.jpg" alt="User">
-                        </div>
-                        <p>Huzaim</p>
-                    </div>
-                    <div class="story">
-                        <img src="assets/images/stories/story2.jpg" alt="Story" class="story-img">
-                        <div class="story-avatar">
-                            <img src="assets/images/users/user2.jpg" alt="User">
-                        </div>
-                        <p>Mussab</p>
-                    </div>
-                    <div class="story">
-                        <img src="assets/images/stories/story3.jpg" alt="Story" class="story-img">
-                        <div class="story-avatar">
-                            <img src="assets/images/users/user3.jpg" alt="User">
-                        </div>
-                        <p>Izaan</p>
-                    </div>
-                    <div class="story">
-                        <img src="assets/images/stories/story4.jpg" alt="Story" class="story-img">
-                        <div class="story-avatar">
-                            <img src="assets/images/users/user4.jpg" alt="User">
-                        </div>
-                        <p>Daraab</p>
-                    </div>
-                </section>
-
-                <!-- Create Post -->
-                <section class="create-post">
-                    <div class="post-input">
-                        <img id="post-user-img" src="assets/images/default-avatar.png" alt="User" class="avatar-sm">
-                        <input type="text" placeholder="What's on your mind?" id="new-post-text">
-                    </div>
-                    <div class="post-actions">
-                        <button class="post-action">
-                            <i class="fas fa-image"></i>
-                            <span>Photo/Video</span>
-                        </button>
-                        <button class="post-action">
-                            <i class="fas fa-user-tag"></i>
-                            <span>Tag Friends</span>
-                        </button>
-                        <button class="post-action">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Location</span>
-                        </button>
-                        <button id="create-post-btn" class="post-submit">Share</button>
-                    </div>
-                </section>
-
-                <!-- Posts Feed -->
-                <section class="posts-container" id="posts-container">
-                    <!-- Posts will be loaded dynamically -->
-                </section>
-            </main>
-
-            <!-- Right Sidebar -->
-            <aside class="right-sidebar">
-                <!-- Upcoming Events -->
-                <div class="sidebar-card">
-                    <div class="card-header">
-                        <h3>Upcoming Events</h3>
-                        <a href="#" class="see-all">See All</a>
-                    </div>
-                    <div class="event-list">
-                        <div class="event-item">
-                            <div class="event-date">
-                                <span class="month">May</span>
-                                <span class="day">15</span>
-                            </div>
-                            <div class="event-info">
-                                <h4>Code Jam 2025</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> Tech Hub</p>
-                                <p><i class="fas fa-users"></i> 24 Going</p>
-                            </div>
-                        </div>
-                        <div class="event-item">
-                            <div class="event-date">
-                                <span class="month">May</span>
-                                <span class="day">22</span>
-                            </div>
-                            <div class="event-info">
-                                <h4>DevOps Workshop</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> Virtual</p>
-                                <p><i class="fas fa-users"></i> 36 Going</p>
-                            </div>
+                    <!-- Friends List -->
+                    <div class="card p-4">
+                        <h3 class="font-bold text-lg mb-2">Friends</h3>
+                        <div id="user-list" class="user-list">
+                            <!-- Users will be populated here -->
+                            <div class="loading-spinner" id="friends-loading"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Friend Suggestions -->
-                <div class="sidebar-card">
-                    <div class="card-header">
-                        <h3>People You May Know</h3>
-                        <a href="#" class="see-all">See All</a>
-                    </div>
-                    <ul class="suggestion-list">
-                        <li class="suggestion-item">
-                            <img src="assets/images/users/suggestion1.jpg" alt="User" class="avatar-sm">
-                            <div class="suggestion-info">
-                                <p>Ahmad Khan</p>
-                                <small>12 mutual friends</small>
+                <!-- Chat Container -->
+                <div class="md:w-3/4">
+                    <div class="card chat-container">
+                        <div id="chat-header" class="p-4 border-b flex items-center">
+                            <h2 class="font-bold text-xl">Chat</h2>
+                            <span id="chat-status" class="ml-auto text-sm text-gray-500"></span>
+                        </div>
+                        <div id="messages" class="message-container">
+                            <div class="text-center text-gray-500 my-4">Start a conversation!</div>
+                        </div>
+                        <div id="typing-indicator" class="typing-indicator ml-4">
+                            <div class="typing-animation">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
                             </div>
-                            <button class="add-friend">
-                                <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="p-4 border-t flex items-center">
+                            <div class="relative flex-grow">
+                                <input id="message-input" type="text" placeholder="Type your message here..." class="message-input w-full pr-12">
+                                <button id="emoji-button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">😊</button>
+                                <div id="emoji-picker" class="emoji-picker">
+                                    <!-- Emojis will be populated here -->
+                                </div>
+                            </div>
+                            <button id="send-message" class="btn btn-primary ml-2 flex items-center justify-center">
+                                <span>Send</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                                </svg>
                             </button>
-                        </li>
-                        <li class="suggestion-item">
-                            <img src="assets/images/users/suggestion2.jpg" alt="User" class="avatar-sm">
-                            <div class="suggestion-info">
-                                <p>Saad Zafar</p>
-                                <small>8 mutual friends</small>
-                            </div>
-                            <button class="add-friend">
-                                <i class="fas fa-user-plus"></i>
-                            </button>
-                        </li>
-                        <li class="suggestion-item">
-                            <img src="assets/images/users/suggestion3.jpg" alt="User" class="avatar-sm">
-                            <div class="suggestion-info">
-                                <p>Aisha Malik</p>
-                                <small>3 mutual friends</small>
-                            </div>
-                            <button class="add-friend">
-                                <i class="fas fa-user-plus"></i>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Active Now -->
-                <div class="sidebar-card">
-                    <div class="card-header">
-                        <h3>Active Now</h3>
+                        </div>
                     </div>
-                    <ul class="active-list">
-                        <li class="active-user">
-                            <div class="active-avatar">
-                                <img src="assets/images/users/user1.jpg" alt="User" class="avatar-sm">
-                                <span class="status-indicator online"></span>
-                            </div>
-                            <p>Huzaim Malik</p>
-                        </li>
-                        <li class="active-user">
-                            <div class="active-avatar">
-                                <img src="assets/images/users/user4.jpg" alt="User" class="avatar-sm">
-                                <span class="status-indicator online"></span>
-                            </div>
-                            <p>Daraab Ahmed</p>
-                        </li>
-                        <li class="active-user">
-                            <div class="active-avatar">
-                                <img src="assets/images/users/user5.jpg" alt="User" class="avatar-sm">
-                                <span class="status-indicator online"></span>
-                            </div>
-                            <p>Fattir Ahmed</p>
-                        </li>
-                    </ul>
                 </div>
-            </aside>
+            </div>
         </div>
 
-        <!-- Chat Window -->
-        <div class="chat-window hidden" id="chat-window">
-            <div class="chat-header">
-                <div class="chat-user">
-                    <img src="assets/images/users/user1.jpg" alt="User" class="avatar-sm">
-                    <div class="chat-user-info">
-                        <h4>Huzaim Malik</h4>
-                        <span class="status">Online</span>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <button class="icon-button"><i class="fas fa-phone"></i></button>
-                    <button class="icon-button"><i class="fas fa-video"></i></button>
-                    <button class="icon-button"><i class="fas fa-expand"></i></button>
-                    <button class="icon-button close-chat"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            <div class="chat-messages" id="chat-messages">
-                <!-- Messages will be loaded dynamically -->
-            </div>
-            <div class="chat-input-container">
-                <button class="icon-button"><i class="fas fa-paperclip"></i></button>
-                <button class="icon-button"><i class="far fa-smile"></i></button>
-                <input type="text" id="chat-input" placeholder="Type a message...">
-                <button class="icon-button send-message"><i class="fas fa-paper-plane"></i></button>
-            </div>
+        <!-- Notification -->
+        <div id="notification" class="notification">
+            <span id="notification-message"></span>
         </div>
     </div>
 
-    <!-- Toast Notifications -->
-    <div id="toast-container"></div>
+    <script>
+        // User data store - we'll simulate a database using localStorage
+        class UserStore {
+            constructor() {
+                // Load users from localStorage or initialize with default users
+                this.users = JSON.parse(localStorage.getItem('polarUsers')) || {};
+                
+                // Initialize with default users if empty
+                if (Object.keys(this.users).length === 0) {
+                    this.initializeDefaultUsers();
+                }
+            }
 
-    <!-- Scripts -->
-    <script src="main.js"></script>
+            initializeDefaultUsers() {
+                const defaultUsers = {
+                    "huzaim": {
+                        fullName: "Huzaim Malik",
+                        username: "huzaim",
+                        password: "password123",
+                        bio: "Aspiring Engineer & Developer",
+                        avatar: "Huzaim Malik.jpg",
+                        status: "online"
+                    },
+                    "mussab": {
+                        fullName: "Mussab Zaheer",
+                        username: "mussab",
+                        password: "password123",
+                        bio: "Tech Enthusiast",
+                        avatar: "Mussab Zaheer.jpg",
+                        status: "offline"
+                    },
+                    "izaan": {
+                        fullName: "Muhammad Izaan",
+                        username: "izaan",
+                        password: "password123",
+                        bio: "Passionate about Coding",
+                        avatar: "Muhammad Izaan.jpg",
+                        status: "online"
+                    },
+                    "daraab": {
+                        fullName: "Daraab Ahmed",
+                        username: "daraab",
+                        password: "password123",
+                        bio: "Creative Mind",
+                        avatar: "Daraab Ahmed.jpg",
+                        status: "offline"
+                    },
+                    "fattir": {
+                        fullName: "Fattir Ahmed",
+                        username: "fattir",
+                        password: "password123",
+                        bio: "Gamer & Coder",
+                        avatar: "Fattir Ahmed.jpg",
+                        status: "online"
+                    }
+                };
+
+                this.users = defaultUsers;
+                this.saveUsers();
+            }
+
+            saveUsers() {
+                localStorage.setItem('polarUsers', JSON.stringify(this.users));
+            }
+
+            addUser(username, fullName, password, bio = "", avatar = "") {
+                if (this.users[username]) {
+                    return false; // User already exists
+                }
+
+                this.users[username] = {
+                    fullName,
+                    username,
+                    password,
+                    bio,
+                    avatar: avatar || this.getRandomAvatar(),
+                    status: "online"
+                };
+
+                this.saveUsers();
+                return true;
+            }
+
+            getRandomAvatar() {
+                // Generate a placeholder avatar if none provided
+                return `/api/placeholder/80/80?text=${Math.floor(Math.random() * 1000)}`;
+            }
+
+            authenticate(username, password) {
+                const user = this.users[username];
+                if (user && user.password === password) {
+                    user.status = "online";
+                    this.saveUsers();
+                    return user;
+                }
+                return null;
+            }
+
+            getUser(username) {
+                return this.users[username];
+            }
+
+            getAllUsers() {
+                return Object.values(this.users);
+            }
+
+            updateUserStatus(username, status) {
+                if (this.users[username]) {
+                    this.users[username].status = status;
+                    this.saveUsers();
+                }
+            }
+        }
+
+        // Message store
+        class MessageStore {
+            constructor() {
+                // Load messages from localStorage or initialize empty
+                this.messages = JSON.parse(localStorage.getItem('polarMessages')) || [];
+                
+                // Clean up old messages (older than 30 days)
+                this.cleanupOldMessages();
+            }
+
+            cleanupOldMessages() {
+                const now = new Date();
+                this.messages = this.messages.filter(msg => {
+                    const msgDate = new Date(msg.timestamp);
+                    return (now - msgDate) / (1000 * 60 * 60 * 24) <= 30; // Keep messages from last 30 days
+                });
+                this.saveMessages();
+            }
+
+            saveMessages() {
+                localStorage.setItem('polarMessages', JSON.stringify(this.messages));
+            }
+
+            addMessage(sender, text) {
+                const newMessage = {
+                    id: Date.now().toString(),
+                    sender,
+                    text,
+                    timestamp: new Date().toISOString(),
+                    reactions: {}
+                };
+                this.messages.push(newMessage);
+                this.saveMessages();
+                return newMessage;
+            }
+
+            deleteMessage(messageId) {
+                this.messages = this.messages.filter(msg => msg.id !== messageId);
+                this.saveMessages();
+            }
+
+            addReaction(messageId, user, emoji) {
+                const message = this.messages.find(msg => msg.id === messageId);
+                if (message) {
+                    if (!message.reactions) {
+                        message.reactions = {};
+                    }
+                    message.reactions[user] = emoji;
+                    this.saveMessages();
+                }
+            }
+
+            removeReaction(messageId, user) {
+                const message = this.messages.find(msg => msg.id === messageId);
+                if (message && message.reactions && message.reactions[user]) {
+                    delete message.reactions[user];
+                    this.saveMessages();
+                }
+            }
+
+            getAllMessages() {
+                return this.messages;
+            }
+        }
+
+        // Auth Controller
+        class AuthController {
+            constructor(userStore) {
+                this.userStore = userStore;
+                this.currentUser = null;
+                
+                // Check if user is already logged in
+                const savedUser = localStorage.getItem('polarCurrentUser');
+                if (savedUser) {
+                    this.currentUser = JSON.parse(savedUser);
+                    this.userStore.updateUserStatus(this.currentUser.username, 'online');
+                }
+            }
+
+            login(username, password) {
+                const user = this.userStore.authenticate(username, password);
+                if (user) {
+                    this.currentUser = user;
+                    localStorage.setItem('polarCurrentUser', JSON.stringify(user));
+                    return user;
+                }
+                return null;
+            }
+
+            signup(username, fullName, password, bio, avatar) {
+                const success = this.userStore.addUser(username, fullName, password, bio, avatar);
+                if (success) {
+                    return this.login(username, password);
+                }
+                return null;
+            }
+
+            logout() {
+                if (this.currentUser) {
+                    this.userStore.updateUserStatus(this.currentUser.username, 'offline');
+                    this.currentUser = null;
+                    localStorage.removeItem('polarCurrentUser');
+                }
+            }
+
+            isLoggedIn() {
+                return !!this.currentUser;
+            }
+
+            getCurrentUser() {
+                return this.currentUser;
+            }
+        }
+
+        // UI Controller
+        class UIController {
+            constructor(authController, userStore, messageStore) {
+                this.authController = authController;
+                this.userStore = userStore;
+                this.messageStore = messageStore;
+                
+                // References to DOM elements
+                this.authContainer = document.getElementById('auth-container');
+                this.mainContainer = document.getElementById('main-container');
+                this.loginForm = document.getElementById('login-form');
+                this.signupForm = document.getElementById('signup-form');
+                this.switchToSignupLink = document.getElementById('switch-to-signup');
+                this.switchToLoginLink = document.getElementById('switch-to-login');
+                this.logoutButton = document.getElementById('logout-button');
+                this.toggleThemeButton = document.getElementById('toggle-theme');
+                this.userPfp = document.getElementById('user-pfp');
+                this.userName = document.getElementById('user-name');
+                this.userBio = document.getElementById('user-bio');
+                this.userStatus = document.getElementById('user-status');
+                this.userList = document.getElementById('user-list');
+                this.messagesContainer = document.getElementById('messages');
+                this.messageInput = document.getElementById('message-input');
+                this.sendMessageButton = document.getElementById('send-message');
+                this.emojiButton = document.getElementById('emoji-button');
+                this.emojiPicker = document.getElementById('emoji-picker');
+                this.typingIndicator = document.getElementById('typing-indicator');
+                this.polarLogo = document.getElementById('polar-logo');
+                this.authLogo = document.getElementById('auth-logo');
+                this.chatStatus = document.getElementById('chat-status');
+                this.notification = document.getElementById('notification');
+                this.notificationMessage = document.getElementById('notification-message');
+                this.friendsLoading = document.getElementById('friends-loading');
+
+                // Initialize emoji picker
+                this.initEmojiPicker();
+                
+                // Initialize app state
+                this.darkMode = localStorage.getItem('theme') === 'dark';
+                this.applyTheme();
+                
+                // Bind event listeners
+                this.bindEvents();
+                
+                // Initialize UI based on auth state
+                this.initializeUI();
+            }
+
+            initEmojiPicker() {
+                const emojis = ['😊', '😂', '❤️', '👍', '👋', '🎉', '🔥', '🤔', '👀', '💯', '✨', '🙏', '💪', '🥳', '😎', '🤩'];
+                
+                emojis.forEach(emoji => {
+                    const emojiElement = document.createElement('div');
+                    emojiElement.className = 'emoji';
+                    emojiElement.textContent = emoji;
+                    emojiElement.addEventListener('click', () => {
+                        this.messageInput.value += emoji;
+                        this.toggleEmojiPicker(false);
+                        this.messageInput.focus();
+                    });
+                    this.emojiPicker.appendChild(emojiElement);
+                });
+            }
+
+            toggleEmojiPicker(show) {
+                this.emojiPicker.style.display = show ? 'grid' : 'none';
+            }
+
+            bindEvents() {
+                // Auth forms
+                this.loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const username = document.getElementById('login-username').value;
+                    const password = document.getElementById('login-password').value;
+                    this.handleLogin(username, password);
+                });
+
+                this.signupForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const fullName = document.getElementById('signup-fullname').value;
+                    const username = document.getElementById('signup-username').value;
+                    const password = document.getElementById('signup-password').value;
+                    const bio = document.getElementById('signup-bio').value;
+                    const avatar = document.getElementById('signup-avatar').value;
+                    this.handleSignup(username, fullName, password, bio, avatar);
+                });
+
+                // Auth links
+                this.switchToSignupLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.loginForm.classList.add('hide');
+                    this.signupForm.classList.remove('hide');
+                });
+
+                this.switchToLoginLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.signupForm.classList.add('hide');
+                    this.loginForm.classList.remove('hide');
+                });
+
+                // Logout
+                this.logoutButton.addEventListener('click', () => {
+                    this.handleLogout();
+                });
+
+                // Theme toggle
+                this.toggleThemeButton.addEventListener('click', () => {
+                    this.darkMode = !this.darkMode;
+                    this.applyTheme();
+                    localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+                });
+
+                // Messaging
+                this.sendMessageButton.addEventListener('click', () => {
+                    this.handleSendMessage();
+                });
+
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.handleSendMessage();
+                    }
+                });
+
+                // Emoji picker
+                this.emojiButton.addEventListener('click', () => {
+                    this.toggleEmojiPicker(this.emojiPicker.style.display !== 'grid');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!this.emojiPicker.contains(e.target) && e.target !== this.emojiButton) {
+                        this.toggleEmojiPicker(false);
+                    }
+                });
+
+                // Typing indicator simulation
+                this.messageInput.addEventListener('input', () => {
+                    if (this.messageInput.value.length > 0) {
+                        this.simulateTypingIndicator();
+                    }
+                });
+            }
+
+            initializeUI() {
+                if (this.authController.isLoggedIn()) {
+                    this.showMainApp();
+                } else {
+                    this.showAuthForms();
+                }
+            }
+
+            applyTheme() {
+                if (this.darkMode) {
+                    document.body.classList.add('dark');
+                    this.toggleThemeButton.textContent = '🔆';
+                    this.polarLogo.src = 'polar2.png';
+                    this.authLogo.src = 'polar2.png';
+                } else {
+                    document.body.classList.remove('dark');
+                    this.toggleThemeButton.textContent = '🌙';
+                    this.polarLogo.src = 'polar1.png';
+                    this.authLogo.src = 'polar1.png';
+                }
+            }
+
+            showAuthForms() {
+                this.authContainer.classList.remove('hide');
+                this.mainContainer.classList.add('hide');
+                
+                // Reset forms
+                this.loginForm.reset();
+                this.signupForm.reset();
+                this.signupForm.classList.add('hide');
+                this.loginForm.classList.remove('hide');
+            }
+
+            showMainApp() {
+                this.authContainer.classList.add('hide');
+                this.mainContainer.classList.remove('hide');
+                
+                // Update UI with current user
+                const currentUser = this.authController.getCurrentUser();
+                this.updateUserProfile(currentUser);
+                
+                // Load user list
+                this.loadUserList();
+                
+                // Load messages
+                this.loadMessages();
+                
+                // Update chat status
+                this.updateChatStatus();
+            }
+
+            updateUserProfile(user) {
+                if (user) {
+                    this.userName.textContent = user.fullName;
+                    this.userBio.textContent = user.bio || 'No bio added';
+                    
+                    if (user.avatar) {
+                        this.userPfp.src = user.avatar;
+                        this.userPfp.alt = user.fullName;
+                    } else {
+                        this.userPfp.src = `/api/placeholder/80/80?text=${user.username.charAt(0).toUpperCase()}`;
+                    }
+                    
+                    this.userStatus.className = `status-indicator ${user.status === 'online' ? 'status-online' : 'status-offline'}`;
+                }
+            }
+
+            loadUserList() {
+                this.friendsLoading.style.display = 'block';
+                const currentUser = this.authController.getCurrentUser();
+                const users = this.userStore.getAllUsers().filter(user => user.username !== currentUser.username);
+                
+                setTimeout(() => {
+                    this.friendsLoading.style.display = 'none';
+                    this.userList.innerHTML = '';
+                    
+                    if (users.length === 0) {
+                        this.userList.innerHTML = '<div class="text-center p-4 text-gray-500">No friends found</div>';
+                        return;
+                    }
+                    
+                    users.forEach(user => {
+                        const userElem = document.createElement('div');
+                        userElem.className = 'user-item animate__animated animate__fadeIn';
+                        
+                        const statusClass = user.status === 'online' ? 'status-online' : 'status-offline';
+                        
+                        userElem.innerHTML = `
+                            <div class="relative mr-3">
+                                <img src="${user.avatar || `/api/placeholder/40/40?text=${user.username.charAt(0).toUpperCase()}`}" 
+                                    alt="${user.fullName}" 
+                                    class="w-10 h-10 rounded-full avatar">
+                                <span class="status-indicator ${statusClass} absolute bottom-0 right-0"></span>
+                            </div>
+                            <div>
+                                <div class="font-semibold">${user.fullName}</div>
+                                <div class="text-xs text-gray-500">${user.status === 'online' ? 'Online' : 'Offline'}</div>
+                            </div>
+                        `;
+                        
+                        this.userList.appendChild(userElem);
+                    });
+                }, 500); // Simulated loading delay
+            }
+
+            loadMessages() {
+                const messages = this.messageStore.getAllMessages();
+                const currentUser = this.authController.getCurrentUser();
+                
+                this.messagesContainer.innerHTML = '';
+                
+                if (messages.length === 0) {
+                    this.messagesContainer.innerHTML = '<div class="text-center text-gray-500 my-4">No messages yet. Start a conversation!</div>';
+                    return;
+                }
+                
+                messages.forEach(msg => {
+                    this.renderMessage(msg, currentUser.username === msg.sender);
+                });
+                
+                // Scroll to bottom
+                this.scrollToBottom();
+            }
+
+            renderMessage(message, isSent) {
+                const user = this.userStore.getUser(message.sender);
+                if (!user) return;
+                
+                const messageElem = document.createElement('div');
+                messageElem.className = `message bubble ${isSent ? 'sent' : ''} animate__animated ${isSent ? 'animate__fadeInRight' : 'animate__fadeInLeft'}`;
+                messageElem.dataset.id = message.id;
+                
+                const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                // Create reactions HTML if any
+                let reactionsHtml = '';
+                if (message.reactions && Object.keys(message.reactions).length > 0) {
+                    reactionsHtml = '<div class="flex mt-1 space-x-1">';
+                    for (const [user, emoji] of Object.entries(message.reactions)) {
+                        reactionsHtml += `<span class="text-xs bg-gray-100 dark:bg-gray-700 rounded-full px-2 py-1">${emoji}</span>`;
+                    }
+                    reactionsHtml += '</div>';
+                }
+                
+                messageElem.innerHTML = `
+                    <div class="message-actions">
+                        <button class="action-button react-button">😊</button>
+                        ${isSent ? '<button class="action-button delete-button">🗑️</button>' : ''}
+                    </div>
+                    <strong>${user.fullName}:</strong> ${message.text}
+                    <div class="message-time">${time}</div>
+                    ${reactionsHtml}
+                `;
+                
+                // Add event listeners for message actions
+                const reactButton = messageElem.querySelector('.react-button');
+                if (reactButton) {
+                    reactButton.addEventListener('click', () => {
+                        // We'll just add a fixed reaction for simplicity
+                        const currentUser = this.authController.getCurrentUser();
+                        this.messageStore.addReaction(message.id, currentUser.username, '👍');
+                        this.loadMessages();
+                    });
+                }
+                
+                const deleteButton = messageElem.querySelector('.delete-button');
+                if (deleteButton) {
+                    deleteButton.addEventListener('click', () => {
+                        this.messageStore.deleteMessage(message.id);
+                        this.loadMessages();
+                    });
+                }
+                
+                this.messagesContainer.appendChild(messageElem);
+            }
+
+            handleSendMessage() {
+                const messageText = this.messageInput.value.trim();
+                if (messageText) {
+                    const currentUser = this.authController.getCurrentUser();
+                    const newMessage = this.messageStore.addMessage(currentUser.username, messageText);
+                    this.renderMessage(newMessage, true);
+                    this.messageInput.value = '';
+                    this.scrollToBottom();
+                    this.typingIndicator.style.display = 'none';
+                }
+            }
+
+            handleLogin(username, password) {
+                const user = this.authController.login(username, password);
+                if (user) {
+                    this.showNotification('Login successful!', 'success');
+                    this.showMainApp();
+                } else {
+                    this.showNotification('Invalid username or password', 'error');
+                }
+            }
+
+            handleSignup(username, fullName, password, bio, avatar) {
+                if (!username || !fullName || !password) {
+                    this.showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const user = this.authController.signup(username, fullName, password, bio, avatar);
+                if (user) {
+                    this.showNotification('Account created successfully!', 'success');
+                    this.showMainApp();
+                } else {
+                    this.showNotification('Username already exists', 'error');
+                }
+            }
+
+            handleLogout() {
+                this.authController.logout();
+                this.showNotification('Logged out successfully', 'success');
+                this.showAuthForms();
+            }
+
+            showNotification(message, type = 'success') {
+                this.notification.className = `notification ${type}`;
+                this.notificationMessage.textContent = message;
+                this.notification.classList.add('show');
+                
+                setTimeout(() => {
+                    this.notification.classList.remove('show');
+                }, 3000);
+            }
+
+            scrollToBottom() {
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            }
+
+            simulateTypingIndicator() {
+                // Random typing simulation
+                const shouldShowTyping = Math.random() > 0.7;
+                
+                if (shouldShowTyping) {
+                    this.typingIndicator.style.display = 'inline-block';
+                    
+                    setTimeout(() => {
+                        this.typingIndicator.style.display = 'none';
+                    }, 2000 + Math.random() * 1000);
+                }
+            }
+
+            updateChatStatus() {
+                const onlineUsers = this.userStore.getAllUsers().filter(user => user.status === 'online').length;
+                this.chatStatus.textContent = `${onlineUsers} users online`;
+            }
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStore = new UserStore();
+            const messageStore = new MessageStore();
+            const authController = new AuthController(userStore);
+            const uiController = new UIController(authController, userStore, messageStore);
+            
+            // Handle page reload/close
+            window.addEventListener('beforeunload', () => {
+                if (authController.isLoggedIn()) {
+                    userStore.updateUserStatus(authController.getCurrentUser().username, 'offline');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
