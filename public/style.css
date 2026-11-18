@@ -1,6 +1,11 @@
-/* Polar v2 — design language from Huzaim's portfolio (huzaim.ca).
+/* Polar — "The Field". One spatial idea, built all the way through.
  *
- * Tokens are copied from the portfolio's style.css:
+ * Above, the sky: rooms are stars in a constellation. The room you are
+ * in is the North Star — its ray drops down to the chat. Below, the ice:
+ * the conversation. A slim meridian rail on the left holds the app
+ * controls. No sidebars, no card grids, no gradients, no stock hero.
+ *
+ * Identity tokens are copied from Huzaim's portfolio (huzaim.ca):
  *   dark (default):  --primary #00111c, --secondary #002137,
  *                    --accent #FFFCF5, --text-primary #EAF0F6,
  *                    --text-secondary #A9B4C2
@@ -11,10 +16,6 @@
  *   font: 'Space Grotesk' everywhere
  *   window-control colours (portfolio): ok #28ca42, warn #ffbd2e,
  *   danger #ff5f57 — used for presence, success/error, Leave Call.
- *
- * Polar keeps its existing body.dark toggle (dark is the default);
- * light is body without .dark. All colours/radii/fonts/buttons come
- * from here and override the Tailwind CDN layout utilities.
  */
 
 :root {
@@ -36,6 +37,8 @@
     --success-color: #28ca42;
     --error-color: #ff5f57;
     --warning-color: #ffbd2e;
+    --rail-width: 64px;
+    --star-dim: rgba(255, 252, 245, 0.35);
 }
 
 /* Light mode: body without .dark (portfolio .light-mode values). */
@@ -50,6 +53,7 @@ body:not(.dark) {
     --header-bg: rgba(240, 240, 240, 0.85);
     --banner-bg: #002137;
     --pill-bg: rgba(0, 17, 28, 0.1);
+    --star-dim: rgba(0, 17, 28, 0.35);
 }
 
 * {
@@ -60,6 +64,8 @@ body:not(.dark) {
 html,
 body {
     font-family: 'Space Grotesk', sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -67,8 +73,6 @@ body {
     color: var(--text-primary);
     transition: var(--transition);
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
     overflow-x: hidden;
 }
 
@@ -83,59 +87,484 @@ textarea {
     opacity: 0.8;
 }
 
-.app-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
-    width: 100%;
-    flex: 1;
+.hide {
+    display: none !important;
+}
+
+/* Small inline SVG icons used in place of emoji. Inline-block so
+   Tailwind's preflight (svg { display: block }) can't knock an icon
+   onto its own line inside a line of text. */
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    vertical-align: -0.12em;
+}
+
+/* ------------------------------------------------------------------ */
+/* Starfields — a scatter of single-pixel stars on the flat night.    */
+/* No gradients, no colour washes: just dots on the dark.             */
+/* ------------------------------------------------------------------ */
+.auth-starfield,
+.sky-starfield {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(1px 1px at 12% 22%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1px 1px at 28% 68%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 41% 15%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1px 1px at 55% 82%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1px 1px at 67% 30%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 76% 64%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1px 1px at 88% 18%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1px 1px at 94% 76%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1px 1px at 5% 52%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1px 1px at 33% 42%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 48% 88%, var(--accent) 50%, transparent 51%),
+        radial-gradient(1px 1px at 72% 8%, var(--accent) 50%, transparent 51%);
+    opacity: 0.5;
+}
+
+/* Light mode: the sky is a pale day field, stars barely there. */
+body:not(.dark) .auth-starfield,
+body:not(.dark) .sky-starfield {
+    opacity: 0.16;
+}
+
+/* ------------------------------------------------------------------ */
+/* Auth — the night sky, the bear under the North Star, the floe.     */
+/* ------------------------------------------------------------------ */
+.auth-sky {
+    position: relative;
+    min-height: 100vh;
     display: flex;
-    flex-direction: column;
-}
-
-/* Cards — portfolio .project-card / .tool-item: secondary bg, 10px
-   radius, portfolio shadow, subtle lift on hover. */
-.card {
-    background-color: var(--secondary);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.25rem;
     overflow: hidden;
-    transition: var(--transition);
-    transform-origin: center;
 }
 
-.card:hover {
-    transform: translateY(-2px);
+.auth-inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 960px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
 }
 
-/* The chat workspace itself doesn't lift — it's not a tile. */
-.chat-container:hover {
-    transform: none;
+.auth-north {
+    text-align: left;
 }
 
-.auth-container {
+.auth-star-mark {
+    width: 26px;
+    height: 26px;
+    color: var(--accent);
+    margin-bottom: 1.25rem;
+    animation: starTwinkle 3.2s ease-in-out infinite;
+}
+
+.auth-star-mark svg {
+    width: 100%;
+    height: 100%;
+}
+
+@keyframes starTwinkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(0.82); }
+}
+
+#auth-logo {
+    width: 148px;
+    height: 148px;
+    display: block;
+    margin-bottom: 1.5rem;
+}
+
+.auth-wordmark {
+    font-size: 3.4rem;
+    font-weight: 700;
+    letter-spacing: 0.42em;
+    margin: 0 0 0.5rem;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.auth-tagline {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.25rem;
+    font-weight: 300;
+}
+
+.auth-e2ee {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 0;
     max-width: 400px;
-    margin: auto;
+    line-height: 1.5;
+}
+
+/* The floe — the sign-in card, a single slab of ice. */
+.auth-floe {
     padding: 2rem;
 }
 
-.chat-container {
+.floe-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem;
+    color: var(--text-primary);
+}
+
+.floe-note {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 0.5rem 0 0;
+    line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ */
+/* Main field — rail + sky + ice, one viewport, no page scroll.       */
+/* ------------------------------------------------------------------ */
+#main-container {
+    display: flex;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+#main-container.hide {
+    display: none !important;
+}
+
+.field {
     flex: 1;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 180px);
-    transition: var(--transition);
+    min-width: 0;
+    min-height: 0;
 }
 
-/* Section headings — portfolio .section-title underline treatment. */
-.card h3,
-#chat-title {
+/* ---- Meridian rail ------------------------------------------------ */
+#meridian {
+    width: var(--rail-width);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-right: 1px solid var(--border);
+    background: var(--primary);
+    z-index: 60;
+}
+
+.meridian-top,
+.meridian-mid,
+.meridian-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#polar-logo {
+    width: 40px;
+    height: 40px;
+    display: block;
+}
+
+.rail-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 0;
+}
+
+.rail-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.rail-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+#rail-admin-button {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* ---- The sky ------------------------------------------------------ */
+#sky {
+    position: relative;
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: 220px 1fr 300px;
+    gap: 2rem;
+    padding: 1.5rem 2rem 1.75rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--primary);
+    overflow: hidden;
+}
+
+.sky-profile {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.sky-avatar-wrap {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+}
+
+.sky-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--secondary);
+    display: block;
+}
+
+.sky-avatar-wrap .status-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+}
+
+.sky-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0.35rem 0 0;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.sky-bio {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.sky-constellation {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.sky-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 0 0 0.25rem;
+}
+
+.sky-label-star {
+    width: 13px;
+    height: 13px;
+    color: var(--accent);
+    display: inline-flex;
+}
+
+.sky-label-star svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* The constellation — rooms as stars along a gentle wave. */
+.constellation {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 0.75rem 0.25rem 2.25rem;
+    scrollbar-width: none;
+}
+
+.constellation::-webkit-scrollbar {
+    display: none;
+}
+
+.constellation .user-item {
+    flex-direction: column;
+    text-align: center;
+    width: auto;
+    min-width: 116px;
+    max-width: 180px;
+    padding: 0.85rem 0.5rem 0.7rem;
+    overflow: visible;
+    border-radius: 12px;
+}
+
+.constellation .user-item::before {
+    display: none;
+}
+
+/* The wave: successive stars sit at different heights. */
+.constellation .user-item:nth-child(4n+1) { margin-top: 0; }
+.constellation .user-item:nth-child(4n+2) { margin-top: 18px; }
+.constellation .user-item:nth-child(4n+3) { margin-top: 30px; }
+.constellation .user-item:nth-child(4n+4) { margin-top: 10px; }
+
+.constellation .user-item img {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 0.5rem;
+    border-color: var(--border);
+}
+
+.constellation .user-item .font-semibold {
+    font-size: 0.92rem;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.constellation .user-item .text-xs {
+    margin-top: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* The North Star — the active room. Bright ring, and its ray
+   drops from the star toward the ice below. */
+.constellation .user-item.active-room {
+    background-color: var(--hover-bg);
+}
+
+.constellation .user-item.active-room img {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--primary), 0 0 18px 2px var(--star-dim);
+}
+
+.constellation .user-item.active-room::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -34px;
+    width: 2px;
+    height: 34px;
+    transform: translateX(-50%);
+    background: var(--accent);
+    opacity: 0.85;
+}
+
+.constellation .user-item.active-room .font-semibold {
+    color: var(--accent);
+}
+
+.constellation-empty {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding: 1rem 0;
+}
+
+.sky-actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.85rem;
+}
+
+.sky-action {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sky-action .form-input {
+    min-width: 0;
+    flex: 1;
+}
+
+.sky-action .btn {
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+}
+
+/* ---- The ice ------------------------------------------------------ */
+#ice {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--primary);
+}
+
+.ice-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem 2rem 0.35rem;
+}
+
+.ice-title-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    min-width: 0;
+}
+
+.ice-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
     position: relative;
     display: inline-block;
 }
 
-.card h3::after,
-#chat-title::after {
+.ice-title::after {
     content: '';
     position: absolute;
     bottom: -6px;
@@ -145,13 +574,18 @@ textarea {
     background-color: var(--accent);
 }
 
-#chat-member-count,
-#chat-status {
+.ice-meta {
+    font-size: 0.85rem;
     color: var(--text-secondary);
 }
 
-/* Invite code as a portfolio .project-tag pill. */
-#invite-code {
+.ice-head-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.invite-pill {
     background-color: var(--pill-bg);
     padding: 0.3rem 0.7rem;
     border-radius: 20px;
@@ -159,128 +593,142 @@ textarea {
     color: var(--accent);
 }
 
-/* Inputs — secondary bg, 1px border, 10px radius, accent focus. */
-.message-input {
-    transition: var(--transition);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.75rem 1.25rem;
-    background-color: var(--secondary);
-    color: var(--text-primary);
-    font-size: 1rem;
+.invite-pill:empty {
+    display: none;
 }
 
-.message-input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--border);
-}
-
-.form-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    transition: var(--transition);
-    background-color: var(--secondary);
-    color: var(--text-primary);
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--border);
-}
-
-/* Buttons — portfolio .cta-button: 5px radius, bold.
-   Primary (Send / Create / Join / Call / Mute) is the portfolio filled
-   variant: off-white gradient on dark, solid navy on light.
-   Plain .btn is the outline variant: transparent + 2px accent border. */
-.btn {
-    padding: 0.75rem 1.5rem;
-    border: 2px solid var(--accent);
-    border-radius: 5px;
-    background-color: transparent;
-    color: var(--accent);
-    cursor: pointer;
-    font-weight: 700;
-    font-family: 'Space Grotesk', sans-serif;
-    transition: var(--transition);
-    font-size: 1rem;
-}
-
-.btn:hover {
-    background-color: var(--hover-bg);
-    transform: translateY(-2px);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #FFFCF5 0%, #e8e5d8 100%);
-    border-color: transparent;
-    color: #00111c;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #FFFCF5 0%, #e8e5d8 100%);
-    box-shadow: var(--shadow);
-    transform: translateY(-2px);
-}
-
-body:not(.dark) .btn-primary {
-    background: #00111c;
-    color: #FFFCF5;
-}
-
-body:not(.dark) .btn-primary:hover {
-    background: #002137;
-}
-
-/* Call-bar buttons keep their compact padding (was inline in HTML). */
-#call-button,
-#mute-button,
-#leave-call-button {
-    padding: 0.5rem 1rem;
-}
-
-/* Leave Call uses the portfolio window-control danger colour. */
-#leave-call-button {
-    border-color: var(--danger);
-    color: var(--danger);
-}
-
-#leave-call-button:hover {
-    background-color: rgba(255, 95, 87, 0.1);
-}
-
-/* Danger buttons (admin deletes) use the same portfolio window-control
-   danger colour as Leave Call. */
-.btn-danger {
-    border-color: var(--danger);
-    color: var(--danger);
-}
-
-.btn-danger:hover {
-    background-color: rgba(255, 95, 87, 0.1);
-}
-
-/* Admin rows: same .user-item look, but the delete button sits on the
-   right and the row is not clickable. */
-.admin-row {
-    cursor: default;
-    justify-content: space-between;
+.ice-e2ee {
+    display: flex;
     align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin: 0.6rem 2rem 0;
 }
 
-.admin-delete {
-    padding: 0.4rem 0.8rem;
+.call-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 2rem;
+    background: var(--secondary);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-top: 0.75rem;
+}
+
+.call-bar.hide {
+    display: none;
+}
+
+/* Members — a horizontal party line, not a sidebar. */
+.members-strip {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.7rem 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.members-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    min-width: 0;
+    flex: 1;
+}
+
+.members-row .user-item {
+    padding: 0.35rem 0.6rem 0.35rem 0.35rem;
+    cursor: default;
+    border-radius: 20px;
+    gap: 0.45rem;
+}
+
+.members-row .user-item::before {
+    display: none;
+}
+
+.members-row .user-item:hover {
+    transform: none;
+}
+
+.members-row .user-item img {
+    width: 30px;
+    height: 30px;
+    margin: 0;
+}
+
+.members-row .user-item .text-xs {
+    display: none;
+}
+
+.members-row .user-item .font-semibold {
     font-size: 0.85rem;
-    flex-shrink: 0;
 }
 
-/* Fallbacks for two Tailwind layout utilities the auth screen depends
-   on, so the first screen still lays out if the Tailwind CDN is slow
-   or unreachable. (Tailwind remains the layout system when it loads;
-   these just repeat its values.) */
+.members-invite {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.members-invite .form-input {
+    width: 170px;
+    padding: 0.55rem 0.75rem;
+}
+
+.members-invite .btn {
+    padding: 0.55rem 0.9rem;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+#message-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.message-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.composer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem 1.25rem;
+    border-top: 1px solid var(--border);
+}
+
+.composer .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared pieces — cards, inputs, buttons, messages.                  */
+/* ------------------------------------------------------------------ */
+.card {
+    background-color: var(--secondary);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
 .text-center {
     text-align: center;
 }
@@ -289,8 +737,6 @@ body:not(.dark) .btn-primary:hover {
     width: 100%;
 }
 
-/* Tailwind colour utilities on muted text — force portfolio tokens so
-   they don't leak Tailwind greys into either theme. */
 .text-gray-400,
 .text-gray-500,
 .text-gray-600,
@@ -330,8 +776,124 @@ body:not(.dark) .btn-primary:hover {
     scrollbar-color: var(--accent) transparent;
 }
 
+.message-input {
+    transition: var(--transition);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    background-color: var(--secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.message-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--border);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: var(--transition);
+    background-color: var(--secondary);
+    color: var(--text-primary);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--border);
+}
+
+/* Buttons — portfolio .cta-button: 5px radius, bold.
+   Primary is the portfolio filled variant: off-white on dark,
+   solid navy on light. Plain .btn is the outline variant. */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--accent);
+    border-radius: 5px;
+    background-color: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: var(--transition);
+    font-size: 1rem;
+}
+
+.btn:hover {
+    background-color: var(--hover-bg);
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #FFFCF5 0%, #e8e5d8 100%);
+    border-color: transparent;
+    color: #00111c;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #FFFCF5 0%, #e8e5d8 100%);
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+}
+
+body:not(.dark) .btn-primary {
+    background: #00111c;
+    color: #FFFCF5;
+}
+
+body:not(.dark) .btn-primary:hover {
+    background: #002137;
+}
+
+#call-button,
+#mute-button,
+#leave-call-button {
+    padding: 0.5rem 1rem;
+}
+
+#call-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+#leave-call-button {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+#leave-call-button:hover {
+    background-color: rgba(255, 95, 87, 0.1);
+}
+
+.btn-danger {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.btn-danger:hover {
+    background-color: rgba(255, 95, 87, 0.1);
+}
+
+.admin-row {
+    cursor: default;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-delete {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
 /* Messages — 10px radius, not pills. Received = secondary;
-   sent = portfolio filled gradient (dark) / solid navy (light). */
+   sent = portfolio filled (dark) / solid navy (light). */
 .message {
     padding: 12px 16px;
     margin: 8px 0;
@@ -374,7 +936,7 @@ body:not(.dark) .message.bubble.sent {
     border: 1px solid var(--border);
     border-radius: 10px;
     display: inline-block;
-    margin: 8px 0;
+    margin: 8px 2rem;
     align-self: flex-start;
     font-size: 0.9rem;
     color: var(--text-secondary);
@@ -432,52 +994,11 @@ body:not(.dark) .message.bubble.sent {
     box-shadow: 0 0 0 2px var(--secondary);
 }
 
-/* Header — portfolio header: sticky, blurred backdrop. */
-.header {
-    display: flex;
-    align-items: center;
-    padding: 1rem 0;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: var(--header-bg);
-    border-bottom: 1px solid var(--border);
-}
-
-.header h1 {
-    color: var(--accent);
-}
-
 .avatar {
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--secondary);
     transition: var(--transition);
-}
-
-.logo-container {
-    display: flex;
-    align-items: center;
-    transition: var(--transition);
-}
-
-/* Logo sizes in our own stylesheet (matching the w-16 / w-12 Tailwind
-   classes in the HTML) so the wordmark holds even if the Tailwind CDN
-   is slow or unreachable — the logo PNGs are ~300px natural size. */
-#auth-logo {
-    width: 64px;
-    height: 64px;
-}
-
-#polar-logo {
-    width: 48px;
-    height: 48px;
-}
-
-.logo-container:hover {
-    transform: scale(1.05);
 }
 
 .user-list {
@@ -486,8 +1007,7 @@ body:not(.dark) .message.bubble.sent {
 }
 
 /* Room / member list items — portfolio .tool-item accent bar:
-   a 4px accent bar grows to full height on hover (subtle -2px lift
-   instead of the portfolio's -10px so the chat layout doesn't jump). */
+   a 4px accent bar grows to full height on hover. */
 .user-item {
     display: flex;
     align-items: center;
@@ -522,14 +1042,6 @@ body:not(.dark) .message.bubble.sent {
 
 .user-item.active-room {
     background-color: var(--hover-bg);
-}
-
-.message-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
 }
 
 .notification {
@@ -623,73 +1135,86 @@ body:not(.dark) .message.bubble.sent {
     color: var(--text-secondary);
 }
 
-.settings-icon {
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.settings-icon:hover {
-    transform: rotate(30deg);
-}
-
-.emoji-picker {
-    position: absolute;
-    bottom: 60px;
-    right: 10px;
-    background: var(--secondary);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-    padding: 0.5rem;
-    display: none;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 0.5rem;
-    z-index: 10;
-    max-width: 300px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.emoji {
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    text-align: center;
-}
-
-.emoji:hover {
-    transform: scale(1.2);
-}
-
-.message-actions {
-    position: absolute;
-    right: 0;
+/* ---- Admin drawer — a field-station panel sliding in from the right. - */
+.admin-drawer {
+    position: fixed;
     top: 0;
-    padding: 0.25rem;
-    display: none;
+    right: 0;
+    height: 100vh;
+    height: 100dvh;
+    width: min(380px, 92vw);
+    background: var(--secondary);
+    border-left: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    z-index: 200;
+    padding: 1.5rem;
+    overflow-y: auto;
+    transform: translateX(102%);
+    transition: transform 0.35s ease;
 }
 
-.message:hover .message-actions {
-    display: block;
+.admin-drawer.open {
+    transform: translateX(0);
 }
 
-.action-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.2s ease;
-    font-size: 0.75rem;
-    padding: 2px 4px;
-    color: inherit;
+.admin-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.action-button:hover {
-    opacity: 1;
+.admin-head h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    position: relative;
+    display: inline-block;
 }
 
-.hide {
-    display: none;
+.admin-head h3::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 70%;
+    height: 3px;
+    background-color: var(--accent);
+}
+
+.admin-note {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 1rem 0 1.25rem;
+}
+
+.admin-subhead {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 1.25rem 0 0.5rem;
+}
+
+.admin-drawer .user-list {
+    max-height: none;
+    overflow-y: visible;
+}
+
+.owner-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 20px;
+    padding: 0.1rem 0.45rem;
+    margin-left: 0.4rem;
+    vertical-align: 0.1em;
+}
+
+.owner-mark svg {
+    width: 0.7rem;
+    height: 0.7rem;
 }
 
 /* Animations */
@@ -698,156 +1223,155 @@ body:not(.dark) .message.bubble.sent {
     to { opacity: 1; }
 }
 
-@keyframes slideInRight {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
-}
-
-@keyframes slideInLeft {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
 .fade-in {
     animation: fadeIn 0.5s ease-in-out;
 }
 
-.slide-in-right {
-    animation: slideInRight 0.3s ease-in-out;
-}
-
-.slide-in-left {
-    animation: slideInLeft 0.3s ease-in-out;
-}
-
-.pulse {
-    animation: pulse 2s infinite;
-}
-
-/* Loading spinner */
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border);
-    border-radius: 50%;
-    border-top-color: var(--accent);
-    animation: spinner 0.8s linear infinite;
-    margin: 20px auto;
-}
-
-@keyframes spinner {
-    to { transform: rotate(360deg); }
-}
-
-/* Profile card */
-.profile-card {
-    border-radius: 10px;
-    overflow: hidden;
-    transition: var(--transition);
-}
-
-.profile-banner {
-    height: 80px;
-    background-color: var(--banner-bg);
-    position: relative;
-}
-
-.profile-avatar-container {
-    position: relative;
-    margin-top: -40px;
-    display: flex;
-    justify-content: center;
-}
-
-.profile-avatar {
-    width: 80px;
-    height: 80px;
-    border: 4px solid var(--secondary);
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.profile-info {
-    padding: 1rem;
-    text-align: center;
-}
-
-.profile-name {
-    font-weight: 700;
-    font-size: 1.25rem;
-    margin-top: 0.5rem;
-}
-
-.profile-bio {
-    color: var(--text-secondary);
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-}
-
-/* Override animate.css durations */
 .animate__animated {
     --animate-duration: 0.5s;
 }
 
-/* Custom tooltip */
-.tooltip {
-    position: relative;
-    display: inline-block;
-}
+/* ------------------------------------------------------------------ */
+/* Responsive — the field stacks: rail slims, sky wraps, ice fills.   */
+/* ------------------------------------------------------------------ */
+@media (max-width: 1024px) {
+    #sky {
+        grid-template-columns: 180px 1fr;
+        gap: 1.25rem;
+    }
 
-.tooltip .tooltip-text {
-    visibility: hidden;
-    width: 120px;
-    background-color: var(--secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    text-align: center;
-    border-radius: 10px;
-    padding: 5px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -60px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 0.75rem;
-}
+    .sky-actions {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
 
-.tooltip:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* Call bar — secondary panel, portfolio tokens. */
-.call-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.6rem 1rem;
-    background: var(--secondary);
-    border-bottom: 1px solid var(--border);
-    font-size: 0.9rem;
-    color: var(--text-primary);
-}
-
-.call-bar.hide {
-    display: none;
-}
-
-#typing-text {
-    margin-right: 6px;
+    .sky-action {
+        flex: 1;
+        min-width: 240px;
+    }
 }
 
 @media (max-width: 768px) {
-    .chat-container {
-        height: calc(100vh - 220px);
+    :root {
+        --rail-width: 52px;
+    }
+
+    .auth-inner {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        max-width: 440px;
+    }
+
+    .auth-north {
+        text-align: center;
+    }
+
+    .auth-star-mark {
+        margin: 0 auto 1rem;
+    }
+
+    #auth-logo {
+        width: 104px;
+        height: 104px;
+        margin: 0 auto 1.25rem;
+    }
+
+    .auth-wordmark {
+        font-size: 2.4rem;
+    }
+
+    .auth-e2ee {
+        margin: 0 auto;
+        justify-content: center;
+    }
+
+    #sky {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem 1rem 1.25rem;
+    }
+
+    .sky-profile {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 0.75rem;
+        align-items: center;
+    }
+
+    .sky-avatar-wrap {
+        grid-row: 1 / 3;
+    }
+
+    .sky-name {
+        grid-column: 2;
+    }
+
+    .sky-bio {
+        grid-column: 2;
+    }
+
+    .sky-avatar-wrap {
+        width: 52px;
+        height: 52px;
+    }
+
+    .sky-avatar {
+        width: 52px;
+        height: 52px;
+    }
+
+    .sky-name {
+        margin: 0;
+    }
+
+    .sky-bio {
+        -webkit-line-clamp: 1;
+    }
+
+    .ice-title-wrap {
+        flex-wrap: wrap;
+        row-gap: 0.35rem;
+    }
+
+    .ice-title {
+        font-size: 1.35rem;
+    }
+
+    .constellation {
+        padding-bottom: 1.75rem;
+    }
+
+    .ice-head,
+    .ice-e2ee,
+    .members-strip,
+    .message-container,
+    .composer,
+    .call-bar {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .ice-e2ee {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .typing-indicator {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .members-invite {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .members-invite .form-input {
+        flex: 1;
+    }
+
+    .message {
+        max-width: 92%;
     }
 }

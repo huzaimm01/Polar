@@ -44,10 +44,21 @@
     return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
+  // Inline SVG icons (no emoji anywhere in the UI). All stroke icons use
+  // currentColor so they follow the theme; the star is a filled mark.
+  const svgIcon = (inner) => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+  const LOCK_SVG = svgIcon('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>');
+  const PHONE_SVG = svgIcon('<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7A2 2 0 0 1 22 16.9Z"/>');
+  const MIC_SVG = svgIcon('<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/>');
+  const MIC_OFF_SVG = svgIcon('<path d="M2 2l20 20"/><path d="M9 5v6a3 3 0 0 0 5.1 2.1M15 9.5V5a3 3 0 0 0-5.7-1.3"/><path d="M17 16.9A7 7 0 0 1 5 10"/><path d="M12 19v3"/>');
+  const MOON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>';
+  const SUN_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  const STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5l2 7.8 7.8 2-7.8 2-2 7.8-2-7.8-7.8-2 7.8-2z"/></svg>';
+
   function avatarFor(user, size = 40) {
     if (user.avatarUrl) return user.avatarUrl;
     const initial = (user.displayName || user.username || '?').charAt(0).toUpperCase();
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'><rect width='100%' height='100%' fill='%23002137'/><text x='50%' y='68%' font-size='${Math.round(size * 0.55)}' font-family='sans-serif' fill='%23FFFCF5' text-anchor='middle'>${initial}</text></svg>`;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'><rect width='100%' height='100%' fill='#002137'/><text x='50%' y='68%' font-size='${Math.round(size * 0.55)}' font-family='sans-serif' fill='#FFFCF5' text-anchor='middle'>${initial}</text></svg>`;
     return `data:image/svg+xml,${encodeURIComponent(svg)}`;
   }
 
@@ -227,9 +238,9 @@
     try {
       text = state.roomKey
         ? await PolarCrypto.decryptMessage(state.roomKey, msg.ciphertext, msg.iv)
-        : '🔒 Encrypted message — no room key on this device.';
+        : 'Encrypted message — no room key on this device.';
     } catch {
-      text = '🔒 Could not decrypt this message (wrong room key).';
+      text = 'Could not decrypt this message (wrong room key).';
     }
     const isSent = msg.sender.username === state.user.username;
     const el = document.createElement('div');
@@ -256,7 +267,7 @@
     const list = $('room-list');
     list.innerHTML = '';
     if (!state.rooms.length) {
-      list.innerHTML = '<div class="text-center p-4 text-gray-500">No rooms yet — create one or join with an invite code.</div>';
+      list.innerHTML = '<div class="constellation-empty">No rooms yet — create one or join with an invite code.</div>';
       return;
     }
     state.rooms.forEach((room) => {
@@ -264,7 +275,7 @@
       el.className = 'user-item animate__animated animate__fadeIn';
       el.innerHTML = `<div class="mr-3"><img src="${avatarFor({ displayName: room.name }, 40)}" class="w-10 h-10 rounded-full avatar" alt=""></div>
         <div><div class="font-semibold">${escapeHtml(room.name)}</div>
-        <div class="text-xs text-gray-500">${room.members.length} member${room.members.length === 1 ? '' : 's'} · 🔒 E2EE</div></div>`;
+        <div class="text-xs text-gray-500">${room.members.length} member${room.members.length === 1 ? '' : 's'} · ${LOCK_SVG} E2EE</div></div>`;
       el.addEventListener('click', () => openRoom(room.id));
       list.appendChild(el);
     });
@@ -325,17 +336,36 @@
   }
 
   // ------------------------------------------------------------ admin -----
-  // Owner admin panel: visible only when the logged-in user is the owner.
-  // Non-owners never see it and no admin requests are made for them.
+  // Owner admin panel: a drawer opened from the meridian rail, visible
+  // only when the logged-in user is the owner. Non-owners never see the
+  // rail button or the drawer, and no admin requests are made for them.
   function refreshAdminPanel() {
     const panel = $('admin-panel');
+    const railBtn = $('rail-admin-button');
     if (state.user && state.user.isOwner) {
-      panel.classList.remove('hide');
+      railBtn.classList.remove('hide');
       loadAdmin().catch((err) => notify(err.message, 'error'));
     } else {
+      railBtn.classList.add('hide');
       panel.classList.add('hide');
+      panel.classList.remove('open');
       $('admin-user-list').innerHTML = '';
       $('admin-room-list').innerHTML = '';
+    }
+  }
+
+  function toggleAdminDrawer(open) {
+    const panel = $('admin-panel');
+    const shouldOpen = open !== undefined ? open : !panel.classList.contains('open');
+    if (shouldOpen) {
+      panel.classList.remove('hide');
+      requestAnimationFrame(() => panel.classList.add('open'));
+      // Lists are only loaded at login — refresh on open so a room or
+      // user created since then shows up instead of stale data.
+      if (state.user && state.user.isOwner) loadAdmin().catch((err) => notify(err.message, 'error'));
+    } else {
+      panel.classList.remove('open');
+      setTimeout(() => panel.classList.add('hide'), 350);
     }
   }
 
@@ -358,7 +388,7 @@
       el.className = 'user-item admin-row';
       const isSelf = state.user && u.id === state.user.id;
       el.innerHTML = `<div class="mr-3"><img src="${avatarFor(u, 40)}" class="w-10 h-10 rounded-full avatar" alt=""></div>
-        <div class="flex-grow"><div class="font-semibold">${escapeHtml(u.displayName)}${u.isOwner ? ' 👑' : ''}</div>
+        <div class="flex-grow"><div class="font-semibold">${escapeHtml(u.displayName)}${u.isOwner ? ` <span class="owner-mark">${STAR_SVG}OWNER</span>` : ''}</div>
         <div class="text-xs text-gray-500">@${escapeHtml(u.username)} · joined ${fmtDate(u.createdAt)}</div></div>`;
       if (!isSelf) {
         const btn = document.createElement('button');
@@ -491,6 +521,8 @@
     state.activeRoom = null;
     state.roomKey = null;
     $('admin-panel').classList.add('hide');
+    $('admin-panel').classList.remove('open');
+    $('rail-admin-button').classList.add('hide');
     $('admin-user-list').innerHTML = '';
     $('admin-room-list').innerHTML = '';
     localStorage.removeItem('polar:token');
@@ -501,12 +533,12 @@
   function wireVoice() {
     PolarVoice.on('state', (s) => {
       state.inCall = s.inCall;
-      $('call-button').textContent = s.inCall ? '📞 Leave call' : '📞 Call';
+      $('call-button').innerHTML = s.inCall ? `${PHONE_SVG}<span>Leave call</span>` : `${PHONE_SVG}<span>Call</span>`;
       $('call-bar').classList.toggle('hide', !s.inCall);
       $('call-participants').textContent = s.inCall
         ? `In call (${s.count}/${PolarVoice.MAX_PEERS} max): you${s.peers.length ? ', ' + s.peers.map((p) => p.username).join(', ') : ''}`
         : '';
-      $('mute-button').textContent = s.muted ? '🔇 Unmute' : '🎙️ Mute';
+      $('mute-button').innerHTML = s.muted ? `${MIC_OFF_SVG}<span>Unmute</span>` : `${MIC_SVG}<span>Mute</span>`;
     });
     $('call-button').addEventListener('click', async () => {
       if (!state.activeRoom) return notify('Open a room first.', 'error');
@@ -516,22 +548,6 @@
     });
     $('mute-button').addEventListener('click', () => PolarVoice.toggleMute());
     $('leave-call-button').addEventListener('click', () => PolarVoice.leaveCall());
-  }
-
-  // ---------------------------------------------------------------- init ---
-  function initEmojiPicker() {
-    const emojis = ['😊', '😂', '❤️', '👍', '👋', '🎉', '🔥', '🤔', '👀', '💯', '✨', '🙏', '💪', '🥳', '😎', '🤩'];
-    emojis.forEach((emoji) => {
-      const el = document.createElement('div');
-      el.className = 'emoji';
-      el.textContent = emoji;
-      el.addEventListener('click', () => {
-        $('message-input').value += emoji;
-        $('emoji-picker').style.display = 'none';
-        $('message-input').focus();
-      });
-      $('emoji-picker').appendChild(el);
-    });
   }
 
   function bindEvents() {
@@ -573,7 +589,7 @@
     let darkMode = localStorage.getItem('theme') !== 'light';
     const applyTheme = () => {
       document.body.classList.toggle('dark', darkMode);
-      $('toggle-theme').textContent = darkMode ? '🔆' : '🌙';
+      $('toggle-theme').innerHTML = darkMode ? SUN_SVG : MOON_SVG;
       $('polar-logo').src = darkMode ? 'polar2.png' : 'polar1.png';
       $('auth-logo').src = darkMode ? 'polar2.png' : 'polar1.png';
       localStorage.setItem('theme', darkMode ? 'dark' : 'light');
@@ -642,16 +658,9 @@
       }, 2000);
     });
 
-    // Emoji picker
-    $('emoji-button').addEventListener('click', () => {
-      const p = $('emoji-picker');
-      p.style.display = p.style.display === 'grid' ? 'none' : 'grid';
-    });
-    document.addEventListener('click', (e) => {
-      if (!$('emoji-picker').contains(e.target) && e.target !== $('emoji-button')) {
-        $('emoji-picker').style.display = 'none';
-      }
-    });
+    // Admin drawer (owner only — the rail button is hidden otherwise).
+    $('rail-admin-button').addEventListener('click', () => toggleAdminDrawer());
+    $('admin-close').addEventListener('click', () => toggleAdminDrawer(false));
 
     window.addEventListener('beforeunload', () => {
       if (state.socket) state.socket.disconnect();
@@ -674,7 +683,6 @@
   }
 
   async function boot() {
-    initEmojiPicker();
     bindEvents();
     wireVoice();
     await applySignupGate();
