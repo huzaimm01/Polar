@@ -1,0 +1,828 @@
+/* Polar v2 — design language from Huzaim's portfolio (huzaim.ca).
+ *
+ * Tokens are copied from the portfolio's style.css:
+ *   dark (default):  --primary #00111c, --secondary #002137,
+ *                    --accent #FFFCF5, --text-primary #EAF0F6,
+ *                    --text-secondary #A9B4C2
+ *   light:           --primary #f0f0f0, --secondary #e0e0e0,
+ *                    --accent #333333, --text-primary #00111c,
+ *                    --text-secondary #002137
+ *   shadow: 0 10px 30px -15px rgba(0,0,0,0.7), transition all 0.3s ease
+ *   font: 'Space Grotesk' everywhere
+ *   window-control colours (portfolio): ok #28ca42, warn #ffbd2e,
+ *   danger #ff5f57 — used for presence, success/error, Leave Call.
+ *
+ * Polar keeps its existing body.dark toggle (dark is the default);
+ * light is body without .dark. All colours/radii/fonts/buttons come
+ * from here and override the Tailwind CDN layout utilities.
+ */
+
+:root {
+    --primary: #00111c;
+    --secondary: #002137;
+    --accent: #FFFCF5;
+    --text-primary: #EAF0F6;
+    --text-secondary: #A9B4C2;
+    --transition: all 0.3s ease;
+    --shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.7);
+    --border: rgba(255, 252, 245, 0.2);
+    --hover-bg: rgba(255, 252, 245, 0.1);
+    --header-bg: rgba(0, 17, 28, 0.85);
+    --banner-bg: #001426;
+    --pill-bg: rgba(255, 252, 245, 0.2);
+    --ok: #28ca42;
+    --warn: #ffbd2e;
+    --danger: #ff5f57;
+    --success-color: #28ca42;
+    --error-color: #ff5f57;
+    --warning-color: #ffbd2e;
+}
+
+/* Light mode: body without .dark (portfolio .light-mode values). */
+body:not(.dark) {
+    --primary: #f0f0f0;
+    --secondary: #e0e0e0;
+    --accent: #333333;
+    --text-primary: #00111c;
+    --text-secondary: #002137;
+    --border: rgba(0, 17, 28, 0.2);
+    --hover-bg: rgba(0, 17, 28, 0.06);
+    --header-bg: rgba(240, 240, 240, 0.85);
+    --banner-bg: #002137;
+    --pill-bg: rgba(0, 17, 28, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+html,
+body {
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+body {
+    background-color: var(--primary);
+    color: var(--text-primary);
+    transition: var(--transition);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+input,
+select,
+textarea {
+    font-size: 16px;
+}
+
+::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cards — portfolio .project-card / .tool-item: secondary bg, 10px
+   radius, portfolio shadow, subtle lift on hover. */
+.card {
+    background-color: var(--secondary);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+    transform-origin: center;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* The chat workspace itself doesn't lift — it's not a tile. */
+.chat-container:hover {
+    transform: none;
+}
+
+.auth-container {
+    max-width: 400px;
+    margin: auto;
+    padding: 2rem;
+}
+
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 180px);
+    transition: var(--transition);
+}
+
+/* Section headings — portfolio .section-title underline treatment. */
+.card h3,
+#chat-title {
+    position: relative;
+    display: inline-block;
+}
+
+.card h3::after,
+#chat-title::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 70%;
+    height: 3px;
+    background-color: var(--accent);
+}
+
+#chat-member-count,
+#chat-status {
+    color: var(--text-secondary);
+}
+
+/* Invite code as a portfolio .project-tag pill. */
+#invite-code {
+    background-color: var(--pill-bg);
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--accent);
+}
+
+/* Inputs — secondary bg, 1px border, 10px radius, accent focus. */
+.message-input {
+    transition: var(--transition);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    background-color: var(--secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.message-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--border);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: var(--transition);
+    background-color: var(--secondary);
+    color: var(--text-primary);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--border);
+}
+
+/* Buttons — portfolio .cta-button: 5px radius, bold.
+   Primary (Send / Create / Join / Call / Mute) is the portfolio filled
+   variant: off-white gradient on dark, solid navy on light.
+   Plain .btn is the outline variant: transparent + 2px accent border. */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--accent);
+    border-radius: 5px;
+    background-color: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: var(--transition);
+    font-size: 1rem;
+}
+
+.btn:hover {
+    background-color: var(--hover-bg);
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #FFFCF5 0%, #e8e5d8 100%);
+    border-color: transparent;
+    color: #00111c;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #FFFCF5 0%, #e8e5d8 100%);
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+}
+
+body:not(.dark) .btn-primary {
+    background: #00111c;
+    color: #FFFCF5;
+}
+
+body:not(.dark) .btn-primary:hover {
+    background: #002137;
+}
+
+/* Call-bar buttons keep their compact padding (was inline in HTML). */
+#call-button,
+#mute-button,
+#leave-call-button {
+    padding: 0.5rem 1rem;
+}
+
+/* Leave Call uses the portfolio window-control danger colour. */
+#leave-call-button {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+#leave-call-button:hover {
+    background-color: rgba(255, 95, 87, 0.1);
+}
+
+/* Fallbacks for two Tailwind layout utilities the auth screen depends
+   on, so the first screen still lays out if the Tailwind CDN is slow
+   or unreachable. (Tailwind remains the layout system when it loads;
+   these just repeat its values.) */
+.text-center {
+    text-align: center;
+}
+
+.w-full {
+    width: 100%;
+}
+
+/* Tailwind colour utilities on muted text — force portfolio tokens so
+   they don't leak Tailwind greys into either theme. */
+.text-gray-400,
+.text-gray-500,
+.text-gray-600,
+.text-gray-700,
+.dark\:text-gray-400 {
+    color: var(--text-secondary);
+}
+
+.hover\:text-gray-700:hover {
+    color: var(--text-primary);
+}
+
+.border-b,
+.border-t {
+    border-color: var(--border);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+}
+
+/* Messages — 10px radius, not pills. Received = secondary;
+   sent = portfolio filled gradient (dark) / solid navy (light). */
+.message {
+    padding: 12px 16px;
+    margin: 8px 0;
+    border-radius: 10px;
+    max-width: 80%;
+    position: relative;
+    animation-duration: 0.3s;
+    word-break: break-word;
+    transition: var(--transition);
+}
+
+.message.bubble {
+    background: var(--secondary);
+    color: var(--text-primary);
+    align-self: flex-start;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.message.bubble.sent {
+    background: linear-gradient(135deg, #FFFCF5 0%, #e8e5d8 100%);
+    color: #00111c;
+    align-self: flex-end;
+}
+
+body:not(.dark) .message.bubble.sent {
+    background: #00111c;
+    color: #FFFCF5;
+}
+
+.message-time {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-top: 4px;
+    text-align: right;
+}
+
+.typing-indicator {
+    padding: 8px 12px;
+    background: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: inline-block;
+    margin: 8px 0;
+    align-self: flex-start;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    max-width: none;
+    display: none;
+}
+
+.typing-animation {
+    display: inline-flex;
+}
+
+.typing-dot {
+    height: 6px;
+    width: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    margin: 0 2px;
+    animation: typingAnimation 1.4s infinite;
+    opacity: 0.7;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-4px);
+    }
+}
+
+/* Presence — portfolio window-control colours. */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+}
+
+.status-online {
+    background-color: var(--ok);
+    box-shadow: 0 0 0 2px var(--secondary);
+}
+
+.status-offline {
+    background-color: var(--danger);
+    box-shadow: 0 0 0 2px var(--secondary);
+}
+
+/* Header — portfolio header: sticky, blurred backdrop. */
+.header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.header h1 {
+    color: var(--accent);
+}
+
+.avatar {
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--secondary);
+    transition: var(--transition);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
+}
+
+/* Logo sizes in our own stylesheet (matching the w-16 / w-12 Tailwind
+   classes in the HTML) so the wordmark holds even if the Tailwind CDN
+   is slow or unreachable — the logo PNGs are ~300px natural size. */
+#auth-logo {
+    width: 64px;
+    height: 64px;
+}
+
+#polar-logo {
+    width: 48px;
+    height: 48px;
+}
+
+.logo-container:hover {
+    transform: scale(1.05);
+}
+
+.user-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Room / member list items — portfolio .tool-item accent bar:
+   a 4px accent bar grows to full height on hover (subtle -2px lift
+   instead of the portfolio's -10px so the chat layout doesn't jump). */
+.user-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.user-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 0;
+    background-color: var(--accent);
+    transition: var(--transition);
+}
+
+.user-item:hover::before,
+.user-item.active-room::before {
+    height: 100%;
+}
+
+.user-item:hover {
+    background-color: var(--hover-bg);
+    transform: translateY(-2px);
+}
+
+.user-item.active-room {
+    background-color: var(--hover-bg);
+}
+
+.message-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    background-color: var(--secondary);
+    color: var(--text-primary);
+    font-weight: 500;
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    border-left-color: var(--success-color);
+}
+
+.notification.error {
+    border-left-color: var(--error-color);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-error {
+    color: var(--error-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.switch-form {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.switch-form a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    position: relative;
+}
+
+.switch-form a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--accent);
+    transition: var(--transition);
+}
+
+.switch-form a:hover::after {
+    width: 100%;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 1rem 0;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--border);
+}
+
+.divider-text {
+    padding: 0 1rem;
+    color: var(--text-secondary);
+}
+
+.settings-icon {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.settings-icon:hover {
+    transform: rotate(30deg);
+}
+
+.emoji-picker {
+    position: absolute;
+    bottom: 60px;
+    right: 10px;
+    background: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 0.5rem;
+    display: none;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.5rem;
+    z-index: 10;
+    max-width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.emoji {
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    text-align: center;
+}
+
+.emoji:hover {
+    transform: scale(1.2);
+}
+
+.message-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0.25rem;
+    display: none;
+}
+
+.message:hover .message-actions {
+    display: block;
+}
+
+.action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    color: inherit;
+}
+
+.action-button:hover {
+    opacity: 1;
+}
+
+.hide {
+    display: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.slide-in-right {
+    animation: slideInRight 0.3s ease-in-out;
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.3s ease-in-out;
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-radius: 50%;
+    border-top-color: var(--accent);
+    animation: spinner 0.8s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
+
+/* Profile card */
+.profile-card {
+    border-radius: 10px;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.profile-banner {
+    height: 80px;
+    background-color: var(--banner-bg);
+    position: relative;
+}
+
+.profile-avatar-container {
+    position: relative;
+    margin-top: -40px;
+    display: flex;
+    justify-content: center;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border: 4px solid var(--secondary);
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info {
+    padding: 1rem;
+    text-align: center;
+}
+
+.profile-name {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-top: 0.5rem;
+}
+
+.profile-bio {
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Override animate.css durations */
+.animate__animated {
+    --animate-duration: 0.5s;
+}
+
+/* Custom tooltip */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: var(--secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    text-align: center;
+    border-radius: 10px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.75rem;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Call bar — secondary panel, portfolio tokens. */
+.call-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    background: var(--secondary);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.call-bar.hide {
+    display: none;
+}
+
+#typing-text {
+    margin-right: 6px;
+}
+
+@media (max-width: 768px) {
+    .chat-container {
+        height: calc(100vh - 220px);
+    }
+}

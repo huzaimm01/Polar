@@ -1,0 +1,18 @@
+# Render one-click deploy for Polar v2.
+# In the Render dashboard: New -> Blueprint, point it at this repo.
+# Then set MONGODB_URI in the dashboard (or paste your Atlas string when prompted).
+# A JWT_SECRET is generated automatically per deploy; set your own for stable sessions.
+services:
+  - type: web
+    name: polar
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 24
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true

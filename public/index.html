@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="polarfavicon.png" type="image/png">
+    <title>Polar - Connect Your Circle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Font: Space Grotesk, as on the portfolio (huzaim.ca) -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="crypto.js"></script>
+    <script src="voice.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Authentication Container -->
+        <div id="auth-container" class="auth-container fade-in">
+            <div class="card p-6">
+                <div class="text-center mb-6">
+                    <div class="logo-container mx-auto">
+                        <img src="polar1.png" alt="Polar Logo" class="w-16 h-16 mx-auto" id="auth-logo">
+                        <h1 class="text-2xl font-bold ml-2">Polar</h1>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">Connect with your circle</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">🔒 End-to-end encrypted — the server stores ciphertext only.</p>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username" class="form-label">Username</label>
+                        <input type="text" id="login-username" class="form-input" placeholder="Enter your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password" class="form-label">Password</label>
+                        <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Your password also unlocks your encryption keys on this device.</p>
+                    <button type="submit" class="btn btn-primary w-full mt-4">Login</button>
+                    <div class="switch-form">
+                        <p>Don't have an account? <a href="#" id="switch-to-signup">Sign up</a></p>
+                    </div>
+                </form>
+
+                <!-- Sign Up Form -->
+                <form id="signup-form" class="hide">
+                    <div class="form-group">
+                        <label for="signup-fullname" class="form-label">Full Name</label>
+                        <input type="text" id="signup-fullname" class="form-input" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-username" class="form-label">Username</label>
+                        <input type="text" id="signup-username" class="form-input" placeholder="Create a username (3-20 chars, lowercase, numbers, _)" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password" class="form-label">Password</label>
+                        <input type="password" id="signup-password" class="form-input" placeholder="Create a password (8+ characters)" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-bio" class="form-label">Bio</label>
+                        <textarea id="signup-bio" class="form-input" placeholder="Tell us about yourself" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-avatar" class="form-label">Profile Picture URL</label>
+                        <input type="text" id="signup-avatar" class="form-input" placeholder="Enter image URL (optional)">
+                    </div>
+                    <p class="text-xs text-gray-500">Signing up generates your encryption keys in this browser. Your private key never leaves this device.</p>
+                    <button type="submit" class="btn btn-primary w-full mt-4">Sign Up</button>
+                    <div class="switch-form">
+                        <p>Already have an account? <a href="#" id="switch-to-login">Login</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main App Container -->
+        <div id="main-container" class="hide">
+            <!-- Header -->
+            <div class="header flex justify-between items-center mb-4">
+                <div class="logo-container">
+                    <img src="polar1.png" alt="Polar Logo" class="w-12 h-12" id="polar-logo">
+                    <h1 class="text-2xl font-bold ml-2">Polar</h1>
+                </div>
+                <div class="flex items-center">
+                    <button id="toggle-theme" class="text-2xl mr-4 transition-transform hover:rotate-12">🌙</button>
+                    <div class="tooltip">
+                        <button id="logout-button" class="text-lg">🚪</button>
+                        <span class="tooltip-text">Logout</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4">
+                <!-- Left sidebar: profile + rooms -->
+                <div class="md:w-1/4">
+                    <div class="card profile-card mb-4">
+                        <div class="profile-banner"></div>
+                        <div class="profile-avatar-container">
+                            <img id="user-pfp" src="" alt="Profile" class="profile-avatar">
+                            <div id="user-status" class="status-indicator status-online absolute bottom-0 right-6"></div>
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="user-name" class="profile-name">Loading...</h2>
+                            <p id="user-bio" class="profile-bio">Loading...</p>
+                        </div>
+                    </div>
+
+                    <!-- My Rooms -->
+                    <div class="card p-4 mb-4">
+                        <h3 class="font-bold text-lg mb-2">My Rooms</h3>
+                        <div id="room-list" class="user-list"></div>
+                        <div class="mt-3">
+                            <input id="new-room-name" type="text" class="form-input" placeholder="New room name" maxlength="80">
+                            <button id="create-room-button" class="btn btn-primary w-full mt-2">Create Room</button>
+                        </div>
+                        <div class="divider"><span class="divider-text">or join</span></div>
+                        <div class="flex gap-2">
+                            <input id="join-code" type="text" class="form-input" placeholder="Invite code" maxlength="6" style="text-transform: uppercase">
+                            <button id="join-room-button" class="btn btn-primary">Join</button>
+                        </div>
+                    </div>
+
+                    <!-- Members of active room -->
+                    <div class="card p-4">
+                        <h3 class="font-bold text-lg mb-2">Members</h3>
+                        <div id="member-list" class="user-list"></div>
+                        <div class="mt-3">
+                            <input id="invite-username" type="text" class="form-input" placeholder="Invite by username">
+                            <button id="invite-member-button" class="btn btn-primary w-full mt-2">Add to Room</button>
+                        </div>
+                        <button id="copy-invite-button" class="btn w-full mt-2">📋 Copy Invite Code</button>
+                    </div>
+                </div>
+
+                <!-- Chat Container -->
+                <div class="md:w-3/4">
+                    <div class="card chat-container">
+                        <div id="chat-header" class="p-4 border-b flex items-center flex-wrap gap-2">
+                            <h2 id="chat-title" class="font-bold text-xl">Chat</h2>
+                            <span id="chat-member-count" class="text-sm text-gray-500"></span>
+                            <span class="ml-auto text-sm text-gray-500" id="invite-code"></span>
+                            <span id="chat-status" class="text-sm text-gray-500"></span>
+                            <button id="call-button" class="btn btn-primary">📞 Call</button>
+                        </div>
+                        <div class="px-4 pt-2 text-xs text-gray-500">🔒 End-to-end encrypted — only room members can read this. The server stores ciphertext only.</div>
+                        <div id="call-bar" class="call-bar hide">
+                            <span id="call-participants"></span>
+                            <button id="mute-button" class="btn btn-primary">🎙️ Mute</button>
+                            <button id="leave-call-button" class="btn">Leave</button>
+                        </div>
+                        <div id="messages" class="message-container">
+                            <div class="text-center text-gray-500 my-4">Start a conversation!</div>
+                        </div>
+                        <div id="typing-indicator" class="typing-indicator ml-4">
+                            <span id="typing-text"></span>
+                            <span class="typing-animation">
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                            </span>
+                        </div>
+                        <div class="p-4 border-t flex items-center">
+                            <div class="relative flex-grow">
+                                <input id="message-input" type="text" placeholder="Type your message here..." class="message-input w-full pr-12">
+                                <button id="emoji-button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">😊</button>
+                                <div id="emoji-picker" class="emoji-picker"></div>
+                            </div>
+                            <button id="send-message" class="btn btn-primary ml-2 flex items-center justify-center">
+                                <span>Send</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div id="notification" class="notification">
+            <span id="notification-message"></span>
+        </div>
+    </div>
+</body>
+</html>
