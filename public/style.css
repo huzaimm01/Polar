@@ -1,9 +1,4 @@
-/* Polar — "The Field". One spatial idea, built all the way through.
- *
- * Above, the sky: rooms are stars in a constellation. The room you are
- * in is the North Star — its ray drops down to the chat. Below, the ice:
- * the conversation. A slim meridian rail on the left holds the app
- * controls. No sidebars, no card grids, no gradients, no stock hero.
+/* Polar styles.
  *
  * Identity tokens are copied from Huzaim's portfolio (huzaim.ca):
  *   dark (default):  --primary #00111c, --secondary #002137,
@@ -103,38 +98,7 @@ textarea {
 }
 
 /* ------------------------------------------------------------------ */
-/* Starfields — a scatter of single-pixel stars on the flat night.    */
-/* No gradients, no colour washes: just dots on the dark.             */
-/* ------------------------------------------------------------------ */
-.auth-starfield,
-.sky-starfield {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-        radial-gradient(1px 1px at 12% 22%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1px 1px at 28% 68%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1.5px 1.5px at 41% 15%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1px 1px at 55% 82%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1px 1px at 67% 30%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1.5px 1.5px at 76% 64%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1px 1px at 88% 18%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1px 1px at 94% 76%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1px 1px at 5% 52%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1px 1px at 33% 42%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1.5px 1.5px at 48% 88%, var(--accent) 50%, transparent 51%),
-        radial-gradient(1px 1px at 72% 8%, var(--accent) 50%, transparent 51%);
-    opacity: 0.5;
-}
-
-/* Light mode: the sky is a pale day field, stars barely there. */
-body:not(.dark) .auth-starfield,
-body:not(.dark) .sky-starfield {
-    opacity: 0.16;
-}
-
-/* ------------------------------------------------------------------ */
-/* Auth — the night sky, the bear under the North Star, the floe.     */
+/* Auth                                                               */
 /* ------------------------------------------------------------------ */
 .auth-sky {
     position: relative;
@@ -153,7 +117,7 @@ body:not(.dark) .sky-starfield {
     max-width: 960px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    gap: 3rem;
     align-items: center;
 }
 
@@ -161,61 +125,25 @@ body:not(.dark) .sky-starfield {
     text-align: left;
 }
 
-.auth-star-mark {
-    width: 26px;
-    height: 26px;
-    color: var(--accent);
-    margin-bottom: 1.25rem;
-    animation: starTwinkle 3.2s ease-in-out infinite;
-}
-
-.auth-star-mark svg {
-    width: 100%;
-    height: 100%;
-}
-
-@keyframes starTwinkle {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.55; transform: scale(0.82); }
-}
-
 #auth-logo {
-    width: 148px;
-    height: 148px;
+    width: 96px;
+    height: 96px;
     display: block;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .auth-wordmark {
-    font-size: 3.4rem;
+    font-size: 2.6rem;
     font-weight: 700;
     letter-spacing: 0.42em;
-    margin: 0 0 0.5rem;
+    margin: 0;
     color: var(--accent);
     line-height: 1;
 }
 
-.auth-tagline {
-    font-size: 1.15rem;
-    color: var(--text-secondary);
-    margin: 0 0 1.25rem;
-    font-weight: 300;
-}
-
-.auth-e2ee {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-    margin: 0;
-    max-width: 400px;
-    line-height: 1.5;
-}
-
-/* The floe — the sign-in card, a single slab of ice. */
+/* The sign-in card. */
 .auth-floe {
-    padding: 2rem;
+    padding: 1.75rem;
 }
 
 .floe-title {
@@ -232,8 +160,13 @@ body:not(.dark) .sky-starfield {
     line-height: 1.5;
 }
 
+.auth-floe > .floe-note {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
 /* ------------------------------------------------------------------ */
-/* Main field — rail + sky + ice, one viewport, no page scroll.       */
+/* Main — rail + header + chat, one viewport, no page scroll.         */
 /* ------------------------------------------------------------------ */
 #main-container {
     display: flex;
@@ -314,14 +247,15 @@ body:not(.dark) .sky-starfield {
     color: var(--accent);
 }
 
-/* ---- The sky ------------------------------------------------------ */
+/* ---- Header ------------------------------------------------------- */
 #sky {
     position: relative;
     flex-shrink: 0;
     display: grid;
-    grid-template-columns: 220px 1fr 300px;
-    gap: 2rem;
-    padding: 1.5rem 2rem 1.75rem;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1rem 2rem 1.25rem;
     border-bottom: 1px solid var(--border);
     background: var(--primary);
     overflow: hidden;
@@ -331,23 +265,22 @@ body:not(.dark) .sky-starfield {
     position: relative;
     z-index: 1;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 0.5rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
     min-width: 0;
 }
 
 .sky-avatar-wrap {
     position: relative;
-    width: 72px;
-    height: 72px;
+    width: 48px;
+    height: 48px;
     flex-shrink: 0;
 }
 
 .sky-avatar {
-    width: 72px;
-    height: 72px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--secondary);
@@ -361,25 +294,14 @@ body:not(.dark) .sky-starfield {
 }
 
 .sky-name {
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    margin: 0.35rem 0 0;
+    margin: 0;
     color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 100%;
-}
-
-.sky-bio {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin: 0;
-    line-height: 1.45;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    max-width: 180px;
 }
 
 .sky-constellation {
@@ -391,37 +313,15 @@ body:not(.dark) .sky-starfield {
     justify-content: center;
 }
 
-.sky-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    margin: 0 0 0.25rem;
-}
-
-.sky-label-star {
-    width: 13px;
-    height: 13px;
-    color: var(--accent);
-    display: inline-flex;
-}
-
-.sky-label-star svg {
-    width: 100%;
-    height: 100%;
-}
-
-/* The constellation — rooms as stars along a gentle wave. */
+/* Rooms in a row. The active room is the North Star: bright ring,
+   with a ray dropping toward the chat below. */
 .constellation {
     display: flex;
     align-items: flex-start;
     gap: 0.5rem;
     overflow-x: auto;
     overflow-y: visible;
-    padding: 0.75rem 0.25rem 2.25rem;
+    padding: 0.5rem 0.25rem 1.75rem;
     scrollbar-width: none;
 }
 
@@ -435,7 +335,7 @@ body:not(.dark) .sky-starfield {
     width: auto;
     min-width: 116px;
     max-width: 180px;
-    padding: 0.85rem 0.5rem 0.7rem;
+    padding: 0.6rem 0.5rem 0.5rem;
     overflow: visible;
     border-radius: 12px;
 }
@@ -444,15 +344,15 @@ body:not(.dark) .sky-starfield {
     display: none;
 }
 
-/* The wave: successive stars sit at different heights. */
+/* Successive rooms sit at slightly different heights. */
 .constellation .user-item:nth-child(4n+1) { margin-top: 0; }
-.constellation .user-item:nth-child(4n+2) { margin-top: 18px; }
-.constellation .user-item:nth-child(4n+3) { margin-top: 30px; }
-.constellation .user-item:nth-child(4n+4) { margin-top: 10px; }
+.constellation .user-item:nth-child(4n+2) { margin-top: 8px; }
+.constellation .user-item:nth-child(4n+3) { margin-top: 16px; }
+.constellation .user-item:nth-child(4n+4) { margin-top: 4px; }
 
 .constellation .user-item img {
-    width: 54px;
-    height: 54px;
+    width: 44px;
+    height: 44px;
     margin: 0 auto 0.5rem;
     border-color: var(--border);
 }
@@ -510,9 +410,9 @@ body:not(.dark) .sky-starfield {
     position: relative;
     z-index: 1;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.85rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .sky-action {
@@ -522,15 +422,16 @@ body:not(.dark) .sky-starfield {
 
 .sky-action .form-input {
     min-width: 0;
-    flex: 1;
+    width: 150px;
+    padding: 0.6rem 0.75rem;
 }
 
 .sky-action .btn {
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.9rem;
     white-space: nowrap;
 }
 
-/* ---- The ice ------------------------------------------------------ */
+/* ---- Chat --------------------------------------------------------- */
 #ice {
     flex: 1;
     display: flex;
@@ -545,7 +446,7 @@ body:not(.dark) .sky-starfield {
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-    padding: 1rem 2rem 0.35rem;
+    padding: 0.75rem 2rem 0.5rem;
 }
 
 .ice-title-wrap {
@@ -556,26 +457,22 @@ body:not(.dark) .sky-starfield {
 }
 
 .ice-title {
-    font-size: 1.6rem;
+    font-size: 1.35rem;
     font-weight: 700;
     margin: 0;
     color: var(--text-primary);
-    position: relative;
-    display: inline-block;
-}
-
-.ice-title::after {
-    content: '';
-    position: absolute;
-    bottom: -6px;
-    left: 0;
-    width: 70%;
-    height: 3px;
-    background-color: var(--accent);
 }
 
 .ice-meta {
     font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.ice-encrypted {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
     color: var(--text-secondary);
 }
 
@@ -597,15 +494,6 @@ body:not(.dark) .sky-starfield {
     display: none;
 }
 
-.ice-e2ee {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.78rem;
-    color: var(--text-secondary);
-    margin: 0.6rem 2rem 0;
-}
-
 .call-bar {
     display: flex;
     align-items: center;
@@ -616,20 +504,20 @@ body:not(.dark) .sky-starfield {
     border-bottom: 1px solid var(--border);
     font-size: 0.9rem;
     color: var(--text-primary);
-    margin-top: 0.75rem;
+    margin-top: 0.5rem;
 }
 
 .call-bar.hide {
     display: none;
 }
 
-/* Members — a horizontal party line, not a sidebar. */
+/* Members — one slim row: members, invite, copy code. */
 .members-strip {
     display: flex;
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
-    padding: 0.7rem 2rem;
+    padding: 0.5rem 2rem;
     border-bottom: 1px solid var(--border);
 }
 
@@ -699,7 +587,7 @@ body:not(.dark) .sky-starfield {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    padding: 1rem 2rem;
+    padding: 1.25rem 2rem;
     display: flex;
     flex-direction: column;
 }
@@ -708,7 +596,7 @@ body:not(.dark) .sky-starfield {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1rem 2rem 1.25rem;
+    padding: 0.75rem 2rem 1rem;
     border-top: 1px solid var(--border);
 }
 
@@ -1135,7 +1023,7 @@ body:not(.dark) .message.bubble.sent {
     color: var(--text-secondary);
 }
 
-/* ---- Admin drawer — a field-station panel sliding in from the right. - */
+/* ---- Admin drawer — slides in from the right. --------------------- */
 .admin-drawer {
     position: fixed;
     top: 0;
@@ -1167,24 +1055,6 @@ body:not(.dark) .message.bubble.sent {
     font-size: 1.25rem;
     font-weight: 700;
     margin: 0;
-    position: relative;
-    display: inline-block;
-}
-
-.admin-head h3::after {
-    content: '';
-    position: absolute;
-    bottom: -6px;
-    left: 0;
-    width: 70%;
-    height: 3px;
-    background-color: var(--accent);
-}
-
-.admin-note {
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-    margin: 1rem 0 1.25rem;
 }
 
 .admin-subhead {
@@ -1232,23 +1102,26 @@ body:not(.dark) .message.bubble.sent {
 }
 
 /* ------------------------------------------------------------------ */
-/* Responsive — the field stacks: rail slims, sky wraps, ice fills.   */
+/* Responsive                                                         */
 /* ------------------------------------------------------------------ */
 @media (max-width: 1024px) {
     #sky {
-        grid-template-columns: 180px 1fr;
-        gap: 1.25rem;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
 
     .sky-actions {
-        grid-column: 1 / -1;
-        flex-direction: row;
         flex-wrap: wrap;
     }
 
     .sky-action {
         flex: 1;
-        min-width: 240px;
+        min-width: 220px;
+    }
+
+    .sky-action .form-input {
+        flex: 1;
+        width: auto;
     }
 }
 
@@ -1267,66 +1140,19 @@ body:not(.dark) .message.bubble.sent {
         text-align: center;
     }
 
-    .auth-star-mark {
-        margin: 0 auto 1rem;
-    }
-
     #auth-logo {
-        width: 104px;
-        height: 104px;
+        width: 88px;
+        height: 88px;
         margin: 0 auto 1.25rem;
     }
 
     .auth-wordmark {
-        font-size: 2.4rem;
-    }
-
-    .auth-e2ee {
-        margin: 0 auto;
-        justify-content: center;
+        font-size: 2rem;
     }
 
     #sky {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 0.75rem;
         padding: 1rem 1rem 1.25rem;
-    }
-
-    .sky-profile {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        column-gap: 0.75rem;
-        align-items: center;
-    }
-
-    .sky-avatar-wrap {
-        grid-row: 1 / 3;
-    }
-
-    .sky-name {
-        grid-column: 2;
-    }
-
-    .sky-bio {
-        grid-column: 2;
-    }
-
-    .sky-avatar-wrap {
-        width: 52px;
-        height: 52px;
-    }
-
-    .sky-avatar {
-        width: 52px;
-        height: 52px;
-    }
-
-    .sky-name {
-        margin: 0;
-    }
-
-    .sky-bio {
-        -webkit-line-clamp: 1;
     }
 
     .ice-title-wrap {
@@ -1335,7 +1161,7 @@ body:not(.dark) .message.bubble.sent {
     }
 
     .ice-title {
-        font-size: 1.35rem;
+        font-size: 1.2rem;
     }
 
     .constellation {
@@ -1343,18 +1169,12 @@ body:not(.dark) .message.bubble.sent {
     }
 
     .ice-head,
-    .ice-e2ee,
     .members-strip,
     .message-container,
     .composer,
     .call-bar {
         padding-left: 1rem;
         padding-right: 1rem;
-    }
-
-    .ice-e2ee {
-        margin-left: 0;
-        margin-right: 0;
     }
 
     .typing-indicator {

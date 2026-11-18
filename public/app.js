@@ -223,7 +223,7 @@
     const { messages } = await api.call(`/rooms/${room.id}/messages?limit=100`);
     $('messages').innerHTML = '';
     if (!messages.length) {
-      $('messages').innerHTML = '<div class="text-center text-gray-500 my-4">No messages yet. Say hello — only room members can read this.</div>';
+      $('messages').innerHTML = '<div class="text-center text-gray-500 my-4">No messages yet.</div>';
       return;
     }
     for (const msg of messages) await renderIncomingMessage(msg, true);
@@ -267,7 +267,7 @@
     const list = $('room-list');
     list.innerHTML = '';
     if (!state.rooms.length) {
-      list.innerHTML = '<div class="constellation-empty">No rooms yet — create one or join with an invite code.</div>';
+      list.innerHTML = '<div class="constellation-empty">No rooms yet.</div>';
       return;
     }
     state.rooms.forEach((room) => {
@@ -275,7 +275,7 @@
       el.className = 'user-item animate__animated animate__fadeIn';
       el.innerHTML = `<div class="mr-3"><img src="${avatarFor({ displayName: room.name }, 40)}" class="w-10 h-10 rounded-full avatar" alt=""></div>
         <div><div class="font-semibold">${escapeHtml(room.name)}</div>
-        <div class="text-xs text-gray-500">${room.members.length} member${room.members.length === 1 ? '' : 's'} · ${LOCK_SVG} E2EE</div></div>`;
+        <div class="text-xs text-gray-500">${room.members.length} member${room.members.length === 1 ? '' : 's'}</div></div>`;
       el.addEventListener('click', () => openRoom(room.id));
       list.appendChild(el);
     });
@@ -319,7 +319,7 @@
     $('chat-member-count').textContent = '';
     $('invite-code').textContent = '';
     $('member-list').innerHTML = '';
-    $('messages').innerHTML = '<div class="text-center text-gray-500 my-4">Create a room or join one with an invite code to start chatting.</div>';
+    $('messages').innerHTML = '<div class="text-center text-gray-500 my-4">No room selected.</div>';
   }
 
   function scrollToBottom() {
@@ -330,7 +330,6 @@
   function updateProfile() {
     const u = state.user;
     $('user-name').textContent = u.displayName;
-    $('user-bio').textContent = u.bio || 'No bio added';
     $('user-pfp').src = avatarFor(u, 80);
     $('user-pfp').alt = u.displayName;
   }
@@ -570,7 +569,7 @@
           $('signup-avatar').value.trim(),
           $('signup-code').value.trim(),
         );
-        notify('Account created — your encryption keys were generated in this browser.');
+        notify('Account created.');
       } catch (err) { notify(err.message, 'error'); }
     });
     $('switch-to-signup').addEventListener('click', (e) => {
@@ -692,7 +691,7 @@
         state.user = user;
         showMain();
         // Private key unlock needs the password: ask for it once per device.
-        const password = prompt('Welcome back — enter your password to unlock your encryption keys on this device:');
+        const password = prompt('Enter your password:');
         if (!password) { logout(); notify('Password is needed to unlock your encrypted chats.', 'error'); return; }
         try {
           await ensureIdentity(password);

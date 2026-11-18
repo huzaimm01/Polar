@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="polarfavicon.png" type="image/png">
-    <title>Polar - Connect Your Circle</title>
+    <title>Polar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Font: Space Grotesk, as on the portfolio (huzaim.ca) -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -19,36 +18,26 @@
 </head>
 <body>
     <div id="app">
-        <!-- ============================================================
-             AUTH — the night sky. The bear looks up at the North Star;
-             the sign-in card is an ice floe below it.
-             ============================================================ -->
+        <!-- Auth -->
         <div id="auth-container" class="auth-sky fade-in">
-            <div class="auth-starfield" aria-hidden="true"></div>
             <div class="auth-inner">
                 <div class="auth-north">
-                    <div class="auth-star-mark" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5l2 7.8 7.8 2-7.8 2-2 7.8-2-7.8-7.8-2 7.8-2z"/></svg>
-                    </div>
                     <img src="polar1.png" alt="Polar Logo" id="auth-logo">
                     <h1 class="auth-wordmark">POLAR</h1>
-                    <p class="auth-tagline">Connect with your circle</p>
-                    <p class="auth-e2ee"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>End-to-end encrypted — the server stores ciphertext only.</span></p>
                 </div>
 
                 <div class="card auth-floe">
                     <!-- Login Form -->
                     <form id="login-form">
-                        <h2 class="floe-title">Welcome back</h2>
+                        <h2 class="floe-title">Log in</h2>
                         <div class="form-group">
                             <label for="login-username" class="form-label">Username</label>
-                            <input type="text" id="login-username" class="form-input" placeholder="Enter your username" required>
+                            <input type="text" id="login-username" class="form-input" required>
                         </div>
                         <div class="form-group">
                             <label for="login-password" class="form-label">Password</label>
-                            <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
+                            <input type="password" id="login-password" class="form-input" required>
                         </div>
-                        <p class="floe-note">Your password also unlocks your encryption keys on this device.</p>
                         <button type="submit" class="btn btn-primary w-full">Log in</button>
                         <div class="switch-form">
                             <p>Don&rsquo;t have an account? <a href="#" id="switch-to-signup">Sign up</a></p>
@@ -57,48 +46,42 @@
 
                     <!-- Sign Up Form -->
                     <form id="signup-form" class="hide">
-                        <h2 class="floe-title">Join the circle</h2>
+                        <h2 class="floe-title">Sign up</h2>
                         <div class="form-group">
-                            <label for="signup-fullname" class="form-label">Full Name</label>
-                            <input type="text" id="signup-fullname" class="form-input" placeholder="Enter your full name" required>
+                            <label for="signup-fullname" class="form-label">Full name</label>
+                            <input type="text" id="signup-fullname" class="form-input" required>
                         </div>
                         <div class="form-group">
                             <label for="signup-username" class="form-label">Username</label>
-                            <input type="text" id="signup-username" class="form-input" placeholder="Create a username (3-20 chars, lowercase, numbers, _)" required>
+                            <input type="text" id="signup-username" class="form-input" required>
                         </div>
                         <div class="form-group">
                             <label for="signup-password" class="form-label">Password</label>
-                            <input type="password" id="signup-password" class="form-input" placeholder="Create a password (8+ characters)" required>
+                            <input type="password" id="signup-password" class="form-input" required>
                         </div>
                         <div class="form-group hide" id="signup-code-group">
                             <label for="signup-code" class="form-label">Invite code</label>
-                            <input type="text" id="signup-code" class="form-input" placeholder="Ask the host for the invite code" autocomplete="off">
-                            <p class="floe-note">This instance is friends-only — you need the invite code to sign up.</p>
+                            <input type="text" id="signup-code" class="form-input" autocomplete="off">
                         </div>
                         <div class="form-group">
                             <label for="signup-bio" class="form-label">Bio</label>
-                            <textarea id="signup-bio" class="form-input" placeholder="Tell us about yourself" rows="3"></textarea>
+                            <textarea id="signup-bio" class="form-input" rows="3"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="signup-avatar" class="form-label">Profile Picture URL</label>
-                            <input type="text" id="signup-avatar" class="form-input" placeholder="Enter image URL (optional)">
+                            <label for="signup-avatar" class="form-label">Profile picture URL</label>
+                            <input type="text" id="signup-avatar" class="form-input">
                         </div>
-                        <p class="floe-note">Signing up generates your encryption keys in this browser. Your private key never leaves this device.</p>
                         <button type="submit" class="btn btn-primary w-full">Sign Up</button>
                         <div class="switch-form">
                             <p>Already have an account? <a href="#" id="switch-to-login">Log in</a></p>
                         </div>
                     </form>
+                    <p class="floe-note">Keys are generated in this browser.</p>
                 </div>
             </div>
         </div>
 
-        <!-- ============================================================
-             MAIN — the field. A slim meridian rail on the left; above,
-             the sky, where rooms are stars in a constellation; below,
-             the ice, where the conversation happens. The active room
-             is the North Star — its ray drops down to the chat.
-             ============================================================ -->
+        <!-- Main -->
         <div id="main-container" class="hide">
             <nav id="meridian" aria-label="Polar">
                 <div class="meridian-top">
@@ -118,48 +101,44 @@
             </nav>
 
             <div class="field">
-                <!-- The sky -->
                 <header id="sky">
-                    <div class="sky-starfield" aria-hidden="true"></div>
                     <section class="sky-profile">
                         <div class="sky-avatar-wrap">
                             <img id="user-pfp" src="" alt="Profile" class="sky-avatar">
                             <span id="user-status" class="status-indicator status-online"></span>
                         </div>
                         <h2 id="user-name" class="sky-name">Loading...</h2>
-                        <p id="user-bio" class="sky-bio">Loading...</p>
                     </section>
 
                     <section class="sky-constellation">
-                        <p class="sky-label"><span class="sky-label-star" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5l2 7.8 7.8 2-7.8 2-2 7.8-2-7.8-7.8-2 7.8-2z"/></svg></span> Your rooms — a field of stars</p>
                         <div id="room-list" class="constellation"></div>
-                        <div class="sky-actions">
-                            <div class="sky-action">
-                                <input id="new-room-name" type="text" class="form-input" placeholder="Chart a new room" maxlength="80">
-                                <button id="create-room-button" class="btn btn-primary">Create room</button>
-                            </div>
-                            <div class="sky-action">
-                                <input id="join-code" type="text" class="form-input" placeholder="Invite code" maxlength="6" style="text-transform: uppercase">
-                                <button id="join-room-button" class="btn">Join</button>
-                            </div>
-                        </div>
                     </section>
+
+                    <div class="sky-actions">
+                        <div class="sky-action">
+                            <input id="new-room-name" type="text" class="form-input" placeholder="New room" maxlength="80">
+                            <button id="create-room-button" class="btn btn-primary">Create</button>
+                        </div>
+                        <div class="sky-action">
+                            <input id="join-code" type="text" class="form-input" placeholder="Invite code" maxlength="6" style="text-transform: uppercase">
+                            <button id="join-room-button" class="btn">Join</button>
+                        </div>
+                    </div>
                 </header>
 
-                <!-- The ice -->
                 <main id="ice">
                     <div class="ice-head">
                         <div class="ice-title-wrap">
                             <h2 id="chat-title" class="ice-title">Chat</h2>
                             <span id="chat-member-count" class="ice-meta"></span>
                             <span id="chat-status" class="ice-meta"></span>
+                            <span class="ice-encrypted"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Encrypted</span>
                         </div>
                         <div class="ice-head-right">
                             <span id="invite-code" class="invite-pill"></span>
                             <button id="call-button" class="btn btn-primary">Call</button>
                         </div>
                     </div>
-                    <p class="ice-e2ee"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>End-to-end encrypted — only room members can read this. The server stores ciphertext only.</span></p>
                     <div id="call-bar" class="call-bar hide">
                         <span id="call-participants"></span>
                         <button id="mute-button" class="btn btn-primary">Mute</button>
@@ -168,17 +147,15 @@
                     <div class="members-strip">
                         <div id="member-list" class="members-row"></div>
                         <div class="members-invite">
-                            <input id="invite-username" type="text" class="form-input" placeholder="Invite by username">
-                            <button id="invite-member-button" class="btn">Add to room</button>
+                            <input id="invite-username" type="text" class="form-input" placeholder="Username">
+                            <button id="invite-member-button" class="btn">Add</button>
                             <button id="copy-invite-button" class="btn">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                <span>Copy invite code</span>
+                                <span>Copy code</span>
                             </button>
                         </div>
                     </div>
-                    <div id="messages" class="message-container">
-                        <div class="text-center text-gray-500 my-4">Start a conversation!</div>
-                    </div>
+                    <div id="messages" class="message-container"></div>
                     <div id="typing-indicator" class="typing-indicator">
                         <span id="typing-text"></span>
                         <span class="typing-animation">
@@ -188,7 +165,7 @@
                         </span>
                     </div>
                     <div class="composer">
-                        <input id="message-input" type="text" placeholder="Type your message here..." class="message-input">
+                        <input id="message-input" type="text" placeholder="Message" class="message-input">
                         <button id="send-message" class="btn btn-primary" aria-label="Send message">
                             <span>Send</span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
@@ -199,7 +176,7 @@
                 </main>
             </div>
 
-            <!-- Owner admin — a field-station drawer, only for the owner -->
+            <!-- Admin -->
             <aside id="admin-panel" class="admin-drawer hide" aria-label="Admin">
                 <div class="admin-head">
                     <h3>Admin</h3>
@@ -207,7 +184,6 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                     </button>
                 </div>
-                <p class="admin-note">Owner controls — only you can see this.</p>
                 <h4 class="admin-subhead">Users</h4>
                 <div id="admin-user-list" class="user-list"></div>
                 <h4 class="admin-subhead">Rooms</h4>
