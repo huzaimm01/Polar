@@ -343,13 +343,15 @@
     afterAuth();
   }
 
-  async function doSignup(displayName, username, password, bio, avatarUrl) {
+  async function doSignup(displayName, username, password, bio, avatarUrl, signupCode) {
     // Generate the encryption identity first — the public key is uploaded
     // with the signup request. The private key never leaves this browser.
     const { publicJwk } = await PolarCrypto.generateIdentity(password);
+    const body = { username, displayName, password, bio, avatarUrl, publicKeyJwk: publicJwk };
+    // Friends-only gate: only sent when the instance requires it.
+    if (signupCode) body.signupCode = signupCode;
     const { token, user } = await api.call('/auth/signup', {
-      method: 'POST', auth: false,
-      body: { username, displayName, password, bio, avatarUrl, publicKeyJwk: publicJwk },
+      method: 'POST', auth: false, body,
     });
     state.token = token;
     state.user = user;
@@ -433,6 +435,7 @@
           $('signup-password').value,
           $('signup-bio').value.trim(),
           $('signup-avatar').value.trim(),
+          $('signup-code').value.trim(),
         );
         notify('Account created — your encryption keys were generated in this browser.');
       } catch (err) { notify(err.message, 'error'); }
@@ -538,10 +541,26 @@
     });
   }
 
+  // Friends-only signup gate: show the invite-code field (and require it)
+  // only when the server says this instance requires one. Defaults to
+  // hidden/open if the config fetch fails.
+  async function applySignupGate() {
+    try {
+      const cfg = await api.call('/config', { auth: false });
+      const required = !!cfg.signupCodeRequired;
+      $('signup-code-group').classList.toggle('hide', !required);
+      $('signup-code').required = required;
+    } catch {
+      $('signup-code-group').classList.add('hide');
+      $('signup-code').required = false;
+    }
+  }
+
   async function boot() {
     initEmojiPicker();
     bindEvents();
     wireVoice();
+    await applySignupGate();
     if (state.token) {
       try {
         const { user } = await api.call('/auth/me');

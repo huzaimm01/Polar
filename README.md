@@ -41,6 +41,16 @@ npm run dev:memory   # ephemeral in-memory MongoDB, data lost on exit
 npm test             # full test suite, also in-memory
 ```
 
+## Friends-only signup (optional)
+
+By default signup is open — anyone who can reach your instance can create an
+account. If you host an instance for just yourself and your friends, set
+`SIGNUP_CODE` to a private code (as an env var in your host dashboard, e.g.
+Render — never commit it) and share it with your friends only. Signup then
+requires the code, and the signup form only shows the invite-code field when
+the server requires it. Self-hosting from a clone? Leave `SIGNUP_CODE` unset
+and signup stays open, or set your own code for your own friends.
+
 ## How it works
 
 | Piece | Tech |
@@ -135,7 +145,7 @@ old/                 untouched v1 files + old/index-v1-legacy.html (backup of v1
 ## API sketch
 
 ```
-POST /api/auth/signup {username, displayName, password, bio?, avatarUrl?, publicKeyJwk}
+POST /api/auth/signup {username, displayName, password, bio?, avatarUrl?, publicKeyJwk, signupCode?}  (signupCode required only when SIGNUP_CODE is set)
 POST /api/auth/login  {username, password}            -> {token, user}
 GET  /api/auth/me                                     -> {user}
 POST /api/auth/public-key {publicKeyJwk}              -> rotate keys on a new device
@@ -150,7 +160,7 @@ POST /api/rooms/:id/invite-key {inviteWrappedRoomKey} -> creator only
 GET  /api/rooms/:id/messages?limit=100                -> ciphertexts, oldest first
 POST /api/rooms/:id/messages {ciphertext, iv}
 GET  /health                                          -> {ok, db}
-GET  /api/config                                      -> {iceServers, maxCallPeers}
+GET  /api/config                                      -> {iceServers, maxCallPeers, signupCodeRequired}
 ```
 
 Socket.io (JWT in handshake `auth.token`): `room:join/leave`,

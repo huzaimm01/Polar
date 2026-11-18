@@ -78,7 +78,10 @@ async function boot() {
       if (process.env.TURN_PASSWORD) turn.credential = process.env.TURN_PASSWORD;
       iceServers.push(turn);
     }
-    res.json({ iceServers, maxCallPeers: 5 });
+    // Friends-only signup gate: true when SIGNUP_CODE is set. Read at
+    // request time so the frontend always reflects the current setting.
+    // The code value itself is never exposed here.
+    res.json({ iceServers, maxCallPeers: 5, signupCodeRequired: Boolean(process.env.SIGNUP_CODE) });
   });
 
   app.get('/health', (req, res) => {

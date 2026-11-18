@@ -5,7 +5,8 @@
  * join, ECDH invite-by-username, ciphertext-only storage (server never sees
  * plaintext), both members decrypting, socket delivery to members, and
  * rejection for non-members / unauthenticated sockets. Also verifies the
- * fail-fast boot when MONGODB_URI is missing (child process).
+ * friends-only signup gate (SIGNUP_CODE) and the fail-fast boot when
+ * MONGODB_URI is missing (child process).
  */
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
@@ -86,6 +87,16 @@ async function signup(username, displayName) {
   });
   assert.equal(status, 201, `signup ${username}: ${JSON.stringify(data)}`);
   return { ...data, identity: id };
+}
+
+// Signup without asserting — for gate tests that expect 403s. `extra` merges
+// into the request body (e.g. { signupCode }). Uses a dummy code only.
+async function rawSignup(username, extra = {}) {
+  const id = await genIdentity();
+  return api('/api/auth/signup', {
+    method: 'POST',
+    body: { username, displayName: 'Gate Test', password: 'testpass123', publicKeyJwk: id.publicJwk, ...extra },
+  });
 }
 
 before(async () => {
@@ -279,6 +290,35 @@ test('socket: message delivered to a member, rejected for a non-member, auth req
     bobSocket.disconnect();
     daveSocket.disconnect();
   }
+});
+
+test('signup gate: SIGNUP_CODE required when set, open when unset', async () => {
+  const prev = process.env.SIGNUP_CODE; // undefined in this suite
+  try {
+    // Unset: open signup, and /api/config says so.
+    delete process.env.SIGNUP_CODE;
+    assert.equal((await api('/api/config')).data.signupCodeRequired, false);
+    assert.equal((await rawSignup('gateopen')).status, 201);
+
+    // Set: config says required; no code -> 403, wrong code -> 403.
+    process.env.SIGNUP_CODE = 'TESTCODE123';
+    assert.equal((await api('/api/config')).data.signupCodeRequired, true);
+    const noCode = await rawSignup('gatenone');
+    assert.equal(noCode.status, 403);
+    assert.match(noCode.data.error || '', /Invite code/);
+    const wrongCode = await rawSignup('gatewrong', { signupCode: 'NOTTHECODE' });
+    assert.equal(wrongCode.status, 403);
+    assert.match(wrongCode.data.error || '', /Invite code/);
+
+    // Correct test code -> 201.
+    assert.equal((await rawSignup('gateright', { signupCode: 'TESTCODE123' })).status, 201);
+  } finally {
+    // Restore exactly what was there before, so later tests are unaffected.
+    if (prev === undefined) delete process.env.SIGNUP_CODE;
+    else process.env.SIGNUP_CODE = prev;
+  }
+  // And signup is open again after the restore.
+  assert.equal((await api('/api/config')).data.signupCodeRequired, false);
 });
 
 test('boot fails fast with a clear message when MONGODB_URI is missing', async () => {

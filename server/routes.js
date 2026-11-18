@@ -53,8 +53,16 @@ function roomShape(room, myUserId) {
 }
 
 // ---------------------------------------------------------------- auth ------
+// Friends-only signup gate: if SIGNUP_CODE is set (hosted instances only),
+// signup requires the matching code. Unset = open signup, so anyone cloning
+// the repo to self-host is never locked out. Read at request time so the
+// gate can be toggled without rebooting.
 router.post('/auth/signup', async (req, res) => {
-  const { username, displayName, password, bio, avatarUrl, publicKeyJwk } = req.body || {};
+  const { username, displayName, password, bio, avatarUrl, publicKeyJwk, signupCode } = req.body || {};
+  const requiredCode = process.env.SIGNUP_CODE;
+  if (requiredCode && signupCode !== requiredCode) {
+    return res.status(403).json({ error: 'Invite code required' });
+  }
   const name = typeof username === 'string' ? username.toLowerCase().trim() : '';
   if (!isValidUsername(name)) {
     return res.status(400).json({ error: 'Username must be 3-20 chars: lowercase letters, digits, underscore.' });
