@@ -5,8 +5,9 @@
  * join, ECDH invite-by-username, ciphertext-only storage (server never sees
  * plaintext), both members decrypting, socket delivery to members, and
  * rejection for non-members / unauthenticated sockets. Also verifies the
- * friends-only signup gate (SIGNUP_CODE) and the fail-fast boot when
- * MONGODB_URI is missing (child process).
+ * friends-only signup gate (SIGNUP_CODE), the owner admin role
+ * (OWNER_USERNAME), and the fail-fast boot when MONGODB_URI is missing
+ * (child process).
  */
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
@@ -319,6 +320,97 @@ test('signup gate: SIGNUP_CODE required when set, open when unset', async () => 
   }
   // And signup is open again after the restore.
   assert.equal((await api('/api/config')).data.signupCodeRequired, false);
+});
+
+test('owner admin role: OWNER_USERNAME gates admin endpoints, owner can manage users/rooms', async () => {
+  const prev = process.env.OWNER_USERNAME; // undefined in this suite
+  try {
+    // Unset: nobody is owner, admin endpoints are 403 even for a real user.
+    delete process.env.OWNER_USERNAME;
+    const plain = await signup('plainuser', 'Plain User');
+    assert.equal(plain.user.isOwner, false);
+    assert.equal((await api('/api/admin/users', { token: plain.token })).status, 403);
+    assert.equal((await api('/api/admin/rooms', { token: plain.token })).status, 403);
+    assert.equal((await api('/api/admin/users')).status, 401);
+
+    // Set the owner (dummy username only).
+    process.env.OWNER_USERNAME = 'owneruser';
+    const owner = await signup('owneruser', 'Owner User');
+    const regular = await signup('regularuser', 'Regular User');
+    assert.equal(owner.user.isOwner, true);
+    assert.equal((await api('/api/auth/me', { token: owner.token })).data.user.isOwner, true);
+    assert.equal(regular.user.isOwner, false);
+    assert.equal((await api('/api/auth/me', { token: regular.token })).data.user.isOwner, false);
+
+    // Owner lists users and rooms; the shape is what the Admin panel needs.
+    const users = await api('/api/admin/users', { token: owner.token });
+    assert.equal(users.status, 200);
+    const ownerRow = users.data.users.find((u) => u.username === 'owneruser');
+    assert.ok(ownerRow && ownerRow.isOwner === true && ownerRow.displayName === 'Owner User' && ownerRow.createdAt);
+    const regularRow = users.data.users.find((u) => u.username === 'regularuser');
+    assert.ok(regularRow && regularRow.isOwner === false);
+    assert.equal((await api('/api/admin/rooms', { token: owner.token })).status, 200);
+
+    // Non-owner is 403 on every admin endpoint, even with a fake id.
+    assert.equal((await api('/api/admin/users', { token: regular.token })).status, 403);
+    assert.equal((await api('/api/admin/rooms', { token: regular.token })).status, 403);
+    assert.equal((await api('/api/admin/rooms/fakeid', { method: 'DELETE', token: regular.token })).status, 403);
+    assert.equal((await api(`/api/admin/users/${regular.user.id}`, { method: 'DELETE', token: regular.token })).status, 403);
+
+    // Owner deletes a room: create one as regular, post a message, delete as owner.
+    const roomKey = await subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    const selfWrapped = await wrapRoomKey(roomKey, regular.identity.privateKey, regular.identity.publicJwk);
+    const created = await api('/api/rooms', {
+      method: 'POST', token: regular.token,
+      body: { name: 'owner test room', wrappedRoomKey: selfWrapped, inviteWrappedRoomKey: selfWrapped },
+    });
+    assert.equal(created.status, 201);
+    const roomId = created.data.room.id;
+    const payload = await encryptMessage(roomKey, 'bye room');
+    assert.equal((await api(`/api/rooms/${roomId}/messages`, { method: 'POST', token: regular.token, body: payload })).status, 201);
+    assert.equal((await api(`/api/admin/rooms/${roomId}`, { method: 'DELETE', token: owner.token })).status, 200);
+    assert.equal((await api(`/api/rooms/${roomId}`, { token: owner.token })).status, 404);
+    // Deleting a missing room -> 404.
+    assert.equal((await api(`/api/admin/rooms/${roomId}`, { method: 'DELETE', token: owner.token })).status, 404);
+    const roomsAfter = await api('/api/admin/rooms', { token: owner.token });
+    assert.equal(roomsAfter.data.rooms.some((r) => r.id === roomId), false);
+
+    // Owner cannot delete their own account.
+    assert.equal((await api(`/api/admin/users/${owner.user.id}`, { method: 'DELETE', token: owner.token })).status, 403);
+
+    // Owner deletes a user: invite them into the owner's room, have them post,
+    // then delete — membership and their messages go away, and they can't log in.
+    const ownerRoomKey = await subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    const ownerSelfWrapped = await wrapRoomKey(ownerRoomKey, owner.identity.privateKey, owner.identity.publicJwk);
+    const ownerRoom = await api('/api/rooms', {
+      method: 'POST', token: owner.token,
+      body: { name: 'owner room', wrappedRoomKey: ownerSelfWrapped, inviteWrappedRoomKey: ownerSelfWrapped },
+    });
+    assert.equal(ownerRoom.status, 201);
+    const ownerRoomId = ownerRoom.data.room.id;
+    const forRegular = await wrapRoomKey(ownerRoomKey, owner.identity.privateKey, regular.identity.publicJwk);
+    assert.equal((await api(`/api/rooms/${ownerRoomId}/members`, {
+      method: 'POST', token: owner.token, body: { username: 'regularuser', wrappedRoomKey: forRegular },
+    })).status, 201);
+    const regPayload = await encryptMessage(ownerRoomKey, 'from regular');
+    assert.equal((await api(`/api/rooms/${ownerRoomId}/messages`, { method: 'POST', token: regular.token, body: regPayload })).status, 201);
+    assert.equal((await api(`/api/admin/users/${regular.user.id}`, { method: 'DELETE', token: owner.token })).status, 200);
+    assert.equal((await api('/api/auth/login', { method: 'POST', body: { username: 'regularuser', password: 'testpass123' } })).status, 401);
+    const roomNow = await api(`/api/rooms/${ownerRoomId}`, { token: owner.token });
+    assert.equal(roomNow.status, 200);
+    assert.equal(roomNow.data.room.members.some((m) => m.username === 'regularuser'), false);
+    const historyNow = await api(`/api/rooms/${ownerRoomId}/messages`, { token: owner.token });
+    assert.equal(historyNow.data.messages.length, 0);
+    // Deleting a missing user -> 404.
+    assert.equal((await api(`/api/admin/users/${regular.user.id}`, { method: 'DELETE', token: owner.token })).status, 404);
+  } finally {
+    // Restore exactly what was there before, so later tests are unaffected.
+    if (prev === undefined) delete process.env.OWNER_USERNAME;
+    else process.env.OWNER_USERNAME = prev;
+  }
+  // And nobody is owner again after the restore.
+  const after = await signup('afterrestore', 'After Restore');
+  assert.equal(after.user.isOwner, false);
 });
 
 test('boot fails fast with a clear message when MONGODB_URI is missing', async () => {

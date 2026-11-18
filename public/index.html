@@ -141,6 +141,16 @@
                         </div>
                         <button id="copy-invite-button" class="btn w-full mt-2">📋 Copy Invite Code</button>
                     </div>
+
+                    <!-- Owner admin panel — only shown when the logged-in user is the owner -->
+                    <div id="admin-panel" class="card p-4 mt-4 hide">
+                        <h3 class="font-bold text-lg mb-1">👑 Admin</h3>
+                        <p class="text-xs text-gray-500 mb-3">Owner controls — only you can see this.</p>
+                        <h4 class="font-bold mb-1">Users</h4>
+                        <div id="admin-user-list" class="user-list mb-3"></div>
+                        <h4 class="font-bold mb-1">Rooms</h4>
+                        <div id="admin-room-list" class="user-list"></div>
+                    </div>
                 </div>
 
                 <!-- Chat Container -->

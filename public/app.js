@@ -55,6 +55,10 @@
     return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
   // ------------------------------------------------------------- identity --
   async function ensureIdentity(password) {
     // Signup created the identity; login unlocks it with the password.
@@ -320,6 +324,115 @@
     $('user-pfp').alt = u.displayName;
   }
 
+  // ------------------------------------------------------------ admin -----
+  // Owner admin panel: visible only when the logged-in user is the owner.
+  // Non-owners never see it and no admin requests are made for them.
+  function refreshAdminPanel() {
+    const panel = $('admin-panel');
+    if (state.user && state.user.isOwner) {
+      panel.classList.remove('hide');
+      loadAdmin().catch((err) => notify(err.message, 'error'));
+    } else {
+      panel.classList.add('hide');
+      $('admin-user-list').innerHTML = '';
+      $('admin-room-list').innerHTML = '';
+    }
+  }
+
+  async function loadAdmin() {
+    const { users } = await api.call('/admin/users');
+    const { rooms } = await api.call('/admin/rooms');
+    renderAdminUsers(users);
+    renderAdminRooms(rooms);
+  }
+
+  function renderAdminUsers(users) {
+    const list = $('admin-user-list');
+    list.innerHTML = '';
+    if (!users.length) {
+      list.innerHTML = '<div class="text-center p-4 text-gray-500">No users.</div>';
+      return;
+    }
+    users.forEach((u) => {
+      const el = document.createElement('div');
+      el.className = 'user-item admin-row';
+      const isSelf = state.user && u.id === state.user.id;
+      el.innerHTML = `<div class="mr-3"><img src="${avatarFor(u, 40)}" class="w-10 h-10 rounded-full avatar" alt=""></div>
+        <div class="flex-grow"><div class="font-semibold">${escapeHtml(u.displayName)}${u.isOwner ? ' 👑' : ''}</div>
+        <div class="text-xs text-gray-500">@${escapeHtml(u.username)} · joined ${fmtDate(u.createdAt)}</div></div>`;
+      if (!isSelf) {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-danger admin-delete';
+        btn.textContent = 'Delete';
+        btn.addEventListener('click', () => deleteAdminUser(u.id, u.username));
+        el.appendChild(btn);
+      }
+      list.appendChild(el);
+    });
+  }
+
+  function renderAdminRooms(rooms) {
+    const list = $('admin-room-list');
+    list.innerHTML = '';
+    if (!rooms.length) {
+      list.innerHTML = '<div class="text-center p-4 text-gray-500">No rooms.</div>';
+      return;
+    }
+    rooms.forEach((r) => {
+      const el = document.createElement('div');
+      el.className = 'user-item admin-row';
+      el.innerHTML = `<div class="flex-grow"><div class="font-semibold">${escapeHtml(r.name)}</div>
+        <div class="text-xs text-gray-500">Code ${escapeHtml(r.inviteCode)} · ${r.memberCount} member${r.memberCount === 1 ? '' : 's'} · ${fmtDate(r.createdAt)}</div></div>`;
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-danger admin-delete';
+      btn.textContent = 'Delete';
+      btn.addEventListener('click', () => deleteAdminRoom(r.id, r.name));
+      el.appendChild(btn);
+      list.appendChild(el);
+    });
+  }
+
+  async function deleteAdminUser(id, username) {
+    if (!confirm(`Delete @${username}? Their room memberships and the messages they sent will be removed. This cannot be undone.`)) return;
+    try {
+      await api.call(`/admin/users/${id}`, { method: 'DELETE' });
+      notify(`Deleted @${username}.`);
+      await loadAdmin();
+      await loadRooms();
+      await refreshActiveRoom();
+    } catch (err) { notify(err.message, 'error'); }
+  }
+
+  async function deleteAdminRoom(id, name) {
+    if (!confirm(`Delete room "${name}" and all of its messages? This cannot be undone.`)) return;
+    try {
+      await api.call(`/admin/rooms/${id}`, { method: 'DELETE' });
+      notify(`Deleted room "${name}".`);
+      const wasActive = state.activeRoom && state.activeRoom.id === id;
+      state.rooms = state.rooms.filter((r) => r.id !== id);
+      if (wasActive) {
+        state.activeRoom = null;
+        state.roomKey = null;
+        renderEmptyState();
+      }
+      renderRoomList();
+      await loadAdmin();
+      if (wasActive) await loadRooms();
+    } catch (err) { notify(err.message, 'error'); }
+  }
+
+  // Re-fetch the active room so the sidebar member list reflects an admin
+  // change (e.g. a deleted user) without reopening the room.
+  async function refreshActiveRoom() {
+    if (!state.activeRoom) return;
+    try {
+      const { room } = await api.call(`/rooms/${state.activeRoom.id}`);
+      state.activeRoom = room;
+      state.rooms = state.rooms.map((r) => (r.id === room.id ? room : r));
+      renderRoom(room);
+    } catch { /* room may have been deleted; the caller handles that */ }
+  }
+
   function showAuth() {
     $('auth-container').classList.remove('hide');
     $('main-container').classList.add('hide');
@@ -329,6 +442,7 @@
     $('auth-container').classList.add('hide');
     $('main-container').classList.remove('hide');
     updateProfile();
+    refreshAdminPanel();
   }
 
   // ---------------------------------------------------------------- auth ---
@@ -376,6 +490,9 @@
     state.rooms = [];
     state.activeRoom = null;
     state.roomKey = null;
+    $('admin-panel').classList.add('hide');
+    $('admin-user-list').innerHTML = '';
+    $('admin-room-list').innerHTML = '';
     localStorage.removeItem('polar:token');
     showAuth();
   }

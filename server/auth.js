@@ -33,6 +33,28 @@ function requireAuth(req, res, next) {
   }
 }
 
+// Owner check: the user whose username matches OWNER_USERNAME is the
+// instance owner (the person running/hosting it). Read at request time,
+// like the SIGNUP_CODE gate, so it can be set without a restart. Usernames
+// are stored lowercase, so the env value is lowercased too. Unset = nobody
+// is owner (the default for anyone cloning the repo to self-host).
+function isOwnerUser(username) {
+  const owner = process.env.OWNER_USERNAME;
+  return Boolean(owner) && typeof username === 'string' &&
+    username.toLowerCase() === owner.trim().toLowerCase();
+}
+
+// Express middleware: requires a valid JWT (via requireAuth) AND the owner.
+// 401 for no/bad token, 403 for a logged-in non-owner.
+function requireOwner(req, res, next) {
+  requireAuth(req, res, () => {
+    if (!isOwnerUser(req.user.username)) {
+      return res.status(403).json({ error: 'Owner access required.' });
+    }
+    return next();
+  });
+}
+
 // Public user shape — never includes passwordHash or anything private.
 function publicUser(user) {
   return {
@@ -43,7 +65,8 @@ function publicUser(user) {
     avatarUrl: user.avatarUrl || '',
     publicKeyJwk: user.publicKeyJwk || null,
     createdAt: user.createdAt,
+    isOwner: isOwnerUser(user.username),
   };
 }
 
-module.exports = { initAuth, signToken, verifyToken, requireAuth, publicUser };
+module.exports = { initAuth, signToken, verifyToken, requireAuth, requireOwner, isOwnerUser, publicUser };

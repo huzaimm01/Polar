@@ -51,6 +51,17 @@ requires the code, and the signup form only shows the invite-code field when
 the server requires it. Self-hosting from a clone? Leave `SIGNUP_CODE` unset
 and signup stays open, or set your own code for your own friends.
 
+## Owner account (optional)
+
+By default nobody has special powers. If you host an instance, set
+`OWNER_USERNAME` to your own username (as an env var in your host dashboard —
+never commit it) and your account becomes the owner: an Admin panel appears
+in the sidebar where you can see every user and room, and delete rooms (with
+their messages) or users (with their memberships and messages). You still log
+in with your normal password — the env var only marks which account is the
+owner. The owner cannot delete their own account. Leave `OWNER_USERNAME`
+unset and nobody is owner.
+
 ## How it works
 
 | Piece | Tech |
@@ -159,6 +170,10 @@ POST /api/rooms/:id/wrapped-key {wrappedRoomKey}      -> store my own wrapped ke
 POST /api/rooms/:id/invite-key {inviteWrappedRoomKey} -> creator only
 GET  /api/rooms/:id/messages?limit=100                -> ciphertexts, oldest first
 POST /api/rooms/:id/messages {ciphertext, iv}
+GET  /api/admin/users                                  -> owner only: all users
+GET  /api/admin/rooms                                  -> owner only: all rooms
+DELETE /api/admin/rooms/:id                           -> owner only: room + its messages
+DELETE /api/admin/users/:id                           -> owner only: user + memberships + their messages (not self)
 GET  /health                                          -> {ok, db}
 GET  /api/config                                      -> {iceServers, maxCallPeers, signupCodeRequired}
 ```

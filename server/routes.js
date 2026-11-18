@@ -5,7 +5,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const crypto = require('node:crypto');
 const { User, Room, Message } = require('./models');
-const { requireAuth, signToken, publicUser } = require('./auth');
+const { requireAuth, signToken, publicUser, requireOwner, isOwnerUser } = require('./auth');
 
 const router = express.Router();
 
@@ -308,6 +308,64 @@ router.post('/rooms/:id/messages', requireAuth, async (req, res) => {
       createdAt: message.createdAt,
     },
   });
+});
+
+// ---------------------------------------------------------------- admin -----
+// Owner-only controls. The owner is the user whose username matches the
+// OWNER_USERNAME env var (see server/auth.js). Every endpoint here is 403
+// for anyone else, including logged-in non-owners; 401 with no/bad token.
+router.get('/admin/users', requireOwner, async (req, res) => {
+  const users = await User.find().sort({ createdAt: 1 });
+  return res.json({
+    users: users.map((u) => ({
+      id: u._id.toString(),
+      username: u.username,
+      displayName: u.displayName,
+      createdAt: u.createdAt,
+      isOwner: isOwnerUser(u.username),
+    })),
+  });
+});
+
+router.get('/admin/rooms', requireOwner, async (req, res) => {
+  const rooms = await Room.find().sort({ createdAt: 1 });
+  return res.json({
+    rooms: rooms.map((r) => ({
+      id: r._id.toString(),
+      name: r.name,
+      inviteCode: r.inviteCode,
+      memberCount: r.members.length,
+      createdAt: r.createdAt,
+    })),
+  });
+});
+
+// Delete a room and all of its messages. Members just lose the room.
+router.delete('/admin/rooms/:id', requireOwner, async (req, res) => {
+  const room = await Room.findById(req.params.id);
+  if (!room) return res.status(404).json({ error: 'Room not found' });
+  await Message.deleteMany({ room: room._id });
+  await room.deleteOne();
+  return res.json({ ok: true });
+});
+
+// Delete a user, their room memberships, and the messages they sent.
+// (Their messages are removed too — otherwise room history would hold
+// messages from a sender that no longer exists.) The owner cannot delete
+// their own account.
+router.delete('/admin/users/:id', requireOwner, async (req, res) => {
+  if (req.params.id === req.user.sub) {
+    return res.status(403).json({ error: 'You cannot delete your own account.' });
+  }
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  await Message.deleteMany({ sender: user._id });
+  await Room.updateMany(
+    { 'members.user': user._id },
+    { $pull: { members: { user: user._id } } },
+  );
+  await user.deleteOne();
+  return res.json({ ok: true });
 });
 
 module.exports = router;

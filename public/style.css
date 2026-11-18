@@ -252,6 +252,31 @@ body:not(.dark) .btn-primary:hover {
     background-color: rgba(255, 95, 87, 0.1);
 }
 
+/* Danger buttons (admin deletes) use the same portfolio window-control
+   danger colour as Leave Call. */
+.btn-danger {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.btn-danger:hover {
+    background-color: rgba(255, 95, 87, 0.1);
+}
+
+/* Admin rows: same .user-item look, but the delete button sits on the
+   right and the row is not clickable. */
+.admin-row {
+    cursor: default;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-delete {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
 /* Fallbacks for two Tailwind layout utilities the auth screen depends
    on, so the first screen still lays out if the Tailwind CDN is slow
    or unreachable. (Tailwind remains the layout system when it loads;
