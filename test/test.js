@@ -413,6 +413,54 @@ test('owner admin role: OWNER_USERNAME gates admin endpoints, owner can manage u
   assert.equal(after.user.isOwner, false);
 });
 
+test('avatarUrl: rejects attribute-breakout and non-http URLs, accepts https', async () => {
+  // Stored-XSS vector: avatarUrl is rendered into <img src="..."> for every
+  // user who sees the profile, so a quote must never reach storage.
+  const breakout = await rawSignup('avatarxss', { avatarUrl: 'x" onerror="alert(1)' });
+  assert.equal(breakout.status, 400);
+  assert.match(breakout.data.error || '', /Avatar/);
+  const jsScheme = await rawSignup('avatarjs', { avatarUrl: 'javascript:alert(1)' });
+  assert.equal(jsScheme.status, 400);
+  const withSpace = await rawSignup('avatarspace', { avatarUrl: 'https://example.com/a b.png' });
+  assert.equal(withSpace.status, 400);
+  const ok = await rawSignup('avatarok', { avatarUrl: 'https://example.com/a.png' });
+  assert.equal(ok.status, 201, JSON.stringify(ok.data));
+  assert.equal(ok.data.user.avatarUrl, 'https://example.com/a.png');
+});
+
+test('config: TURN credentials are never served anonymously, only to logged-in users', async () => {
+  const prev = {
+    url: process.env.TURN_URL,
+    user: process.env.TURN_USERNAME,
+    pass: process.env.TURN_PASSWORD,
+  };
+  try {
+    process.env.TURN_URL = 'turn:turn.example.test:3478';
+    process.env.TURN_USERNAME = 'turnuser';
+    process.env.TURN_PASSWORD = 'turnpass-for-test-only';
+    // Public config: no TURN anywhere, signup-gate flag still present.
+    const pub = await api('/api/config');
+    assert.equal(pub.status, 200);
+    assert.equal('signupCodeRequired' in pub.data, true);
+    assert.equal(JSON.stringify(pub.data).includes('turn.example.test'), false);
+    assert.equal(JSON.stringify(pub.data).includes('turnpass-for-test-only'), false);
+    // Authenticated ICE config: 401 without a token, TURN present with one.
+    assert.equal((await api('/api/config/ice')).status, 401);
+    const alice = await signup('iceuser', 'Ice User');
+    const authed = await api('/api/config/ice', { token: alice.token });
+    assert.equal(authed.status, 200);
+    const turn = authed.data.iceServers.find((s) => s.urls === 'turn:turn.example.test:3478');
+    assert.ok(turn, JSON.stringify(authed.data));
+    assert.equal(turn.username, 'turnuser');
+    assert.equal(turn.credential, 'turnpass-for-test-only');
+  } finally {
+    for (const [key, val] of [['TURN_URL', prev.url], ['TURN_USERNAME', prev.user], ['TURN_PASSWORD', prev.pass]]) {
+      if (val === undefined) delete process.env[key];
+      else process.env[key] = val;
+    }
+  }
+});
+
 test('boot fails fast with a clear message when MONGODB_URI is missing', async () => {
   const { code, stdout, stderr } = await new Promise((resolve) => {
     execFile(process.execPath, ['server.js'], {

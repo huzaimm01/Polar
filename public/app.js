@@ -273,7 +273,7 @@
     state.rooms.forEach((room) => {
       const el = document.createElement('div');
       el.className = 'user-item animate__animated animate__fadeIn';
-      el.innerHTML = `<div class="mr-3"><img src="${avatarFor({ displayName: room.name }, 40)}" class="w-10 h-10 rounded-full avatar" alt=""></div>
+      el.innerHTML = `<div class="mr-3"><img src="${escapeHtml(avatarFor({ displayName: room.name }, 40))}" class="w-10 h-10 rounded-full avatar" alt=""></div>
         <div><div class="font-semibold">${escapeHtml(room.name)}</div>
         <div class="text-xs text-gray-500">${room.members.length} member${room.members.length === 1 ? '' : 's'}</div></div>`;
       el.addEventListener('click', () => openRoom(room.id));
@@ -290,7 +290,7 @@
     room.members.forEach((m) => {
       const el = document.createElement('div');
       el.className = 'user-item';
-      el.innerHTML = `<div class="relative mr-3"><img src="${avatarFor(m, 40)}" class="w-10 h-10 rounded-full avatar" alt="${escapeHtml(m.displayName)}">
+      el.innerHTML = `<div class="relative mr-3"><img src="${escapeHtml(avatarFor(m, 40))}" class="w-10 h-10 rounded-full avatar" alt="${escapeHtml(m.displayName)}">
         <span class="status-indicator ${state.onlineUsers.some((u) => u.id === m.id) ? 'status-online' : 'status-offline'} absolute bottom-0 right-0"></span></div>
         <div><div class="font-semibold">${escapeHtml(m.displayName)}</div>
         <div class="text-xs text-gray-500">@${escapeHtml(m.username)}</div></div>`;
@@ -386,7 +386,7 @@
       const el = document.createElement('div');
       el.className = 'user-item admin-row';
       const isSelf = state.user && u.id === state.user.id;
-      el.innerHTML = `<div class="mr-3"><img src="${avatarFor(u, 40)}" class="w-10 h-10 rounded-full avatar" alt=""></div>
+      el.innerHTML = `<div class="mr-3"><img src="${escapeHtml(avatarFor(u, 40))}" class="w-10 h-10 rounded-full avatar" alt=""></div>
         <div class="flex-grow"><div class="font-semibold">${escapeHtml(u.displayName)}${u.isOwner ? ` <span class="owner-mark">${STAR_SVG}OWNER</span>` : ''}</div>
         <div class="text-xs text-gray-500">@${escapeHtml(u.username)} · joined ${fmtDate(u.createdAt)}</div></div>`;
       if (!isSelf) {

@@ -4,7 +4,8 @@
  * Signalling goes through Socket.io (call:join/offer/answer/ice). Media is
  * peer-to-peer and never touches the server. ICE defaults to Google's public
  * STUN servers; a TURN server can be configured via TURN_URL in .env and is
- * served to the client through /api/config — never hardcoded.
+ * served to logged-in clients through /api/config/ice — never hardcoded,
+ * and never served to anonymous visitors.
  *
  * Limits: mesh calls cap at 5 people in v1 (each peer sends one stream to
  * every other peer). Bigger groups need an SFU (e.g. LiveKit) — a v2 item.
@@ -36,7 +37,13 @@ const PolarVoice = (() => {
 
   async function loadConfig() {
     try {
-      const res = await fetch('/api/config');
+      // TURN credentials are only served to logged-in users
+      // (GET /api/config/ice requires a JWT). Falls back to STUN on failure.
+      const token = localStorage.getItem('polar:token');
+      const res = await fetch('/api/config/ice', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) return;
       const cfg = await res.json();
       if (Array.isArray(cfg.iceServers) && cfg.iceServers.length) iceServers = cfg.iceServers;
     } catch { /* keep STUN defaults */ }

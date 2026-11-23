@@ -13,6 +13,16 @@ function isValidUsername(name) {
   return typeof name === 'string' && /^[a-z0-9_]{3,20}$/.test(name);
 }
 
+// Avatar is a URL string supplied at signup and rendered into an
+// <img src="..."> attribute for every other user who sees the profile.
+// Only http(s) URLs with no whitespace, quotes, or angle brackets are
+// accepted — anything else could break out of the attribute (stored XSS).
+function isValidAvatarUrl(url) {
+  if (!url) return true;
+  return typeof url === 'string' && url.length <= 500 &&
+    /^https?:\/\/[^\s"'<>`]+$/.test(url);
+}
+
 function inviteCode() {
   // 6 chars from an unambiguous alphabet (no 0/O, 1/I/l).
   const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -72,6 +82,9 @@ router.post('/auth/signup', async (req, res) => {
   }
   if (typeof displayName !== 'string' || !displayName.trim()) {
     return res.status(400).json({ error: 'Display name is required.' });
+  }
+  if (!isValidAvatarUrl(avatarUrl)) {
+    return res.status(400).json({ error: 'Avatar must be an http(s) image URL.' });
   }
   if (publicKeyJwk && (typeof publicKeyJwk !== 'object' || publicKeyJwk.kty !== 'EC')) {
     return res.status(400).json({ error: 'publicKeyJwk must be an EC JWK object.' });

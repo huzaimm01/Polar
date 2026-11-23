@@ -15,7 +15,7 @@ const http = require('node:http');
 const path = require('node:path');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const { initAuth } = require('./server/auth');
+const { initAuth, requireAuth } = require('./server/auth');
 const apiRoutes = require('./server/routes');
 const { attachSocket } = require('./server/socket');
 
@@ -65,9 +65,28 @@ async function boot() {
   app.use(cors());
   app.use(express.json({ limit: '100kb' }));
 
-  // Client config: voice ICE servers. TURN credentials are never hardcoded;
-  // they come from env and are only exposed here if the deployer set them.
+  // Client config (public): STUN servers only, plus whether the friends-only
+  // signup gate is on. TURN credentials are secrets and are NEVER served
+  // here — they live on the authenticated /api/config/ice endpoint below,
+  // so an anonymous visitor cannot harvest them.
   app.get('/api/config', (req, res) => {
+    res.json({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ],
+      maxCallPeers: 5,
+      // Friends-only signup gate: true when SIGNUP_CODE is set. Read at
+      // request time so the frontend always reflects the current setting.
+      // The code value itself is never exposed here.
+      signupCodeRequired: Boolean(process.env.SIGNUP_CODE),
+    });
+  });
+
+  // Authenticated ICE config: the full server list, including TURN when the
+  // deployer configured one. Only logged-in users get TURN credentials
+  // (voice calls happen post-login — see public/voice.js loadConfig).
+  app.get('/api/config/ice', requireAuth, (req, res) => {
     const iceServers = [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
@@ -78,10 +97,7 @@ async function boot() {
       if (process.env.TURN_PASSWORD) turn.credential = process.env.TURN_PASSWORD;
       iceServers.push(turn);
     }
-    // Friends-only signup gate: true when SIGNUP_CODE is set. Read at
-    // request time so the frontend always reflects the current setting.
-    // The code value itself is never exposed here.
-    res.json({ iceServers, maxCallPeers: 5, signupCodeRequired: Boolean(process.env.SIGNUP_CODE) });
+    res.json({ iceServers, maxCallPeers: 5 });
   });
 
   app.get('/health', (req, res) => {
